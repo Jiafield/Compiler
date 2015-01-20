@@ -5,8 +5,8 @@
 EXP ([Ee][-+][0-9]+)
 
 %{
-#include <P1.h>
-#include <P1.tab.h>
+#include "P1.h"
+#include "P1.tab.h"
 %}
 
 %%
@@ -93,30 +93,27 @@ EXP ([Ee][-+][0-9]+)
 
 
  /* Punctuarions */
-"{"|"}"|"["|"]"|"("|")"|"."|";"|"," {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
-"++"|"--"|"+"|"-"|"~"|"!" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
-"*"|"/"|"%" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
+"{"|"}"|"["|"]"|"("|")"|"."|";"|"," {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
+"++"|"--"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
+"+"|"-"|"~"|"!" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
+"*"|"/"|"%" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "<<"|">>"|">>>"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
-"=="|"!="|">"|"<"|"<="|">=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
+"=="|"!="|">"|"<"|"<="|">=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); strcpy(yylval.operator, yytext); return CMP;}
 "^"|"&"|"|"|"&&"|"||" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
-"?"|":" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
-"="|"+="|"-="|"*="|"/+"|"%="|"&="|"^="|"|="|"<<="|">>="|">>>="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
+"?"|":" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
+"="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
+"+="|"-="|"*="|"/+"|"%="|"&="|"^="|"|="|"<<="|">>="|">>>="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
 
 
  /* Identifier */
-[a-zA-Z_$][a-zA-Z0-9_$]*    {printf("IDT\t%s\t\t%d\n", yytext, yylineno);}
+[a-zA-Z_$][a-zA-Z0-9_$]*    {printf("IDT\t%s\t\t%d\n", yytext, yylineno); 
+                             yylval.s = lookup(yytext); return IDT;}
 
 
  /* Whitespace */
-[\t\n ]+
-
+[\t ]+
+\n {return EOL;}
 
  /* Invalid character */
-. {printf("Myth\t%s\t\t%d\n", yytext, yylineno);}
+. {yyerror("Myth\t%c", yytext[0]);}
 %%
-
-
-int main(int argc, char **argv) {
-  yylex();
-  return 0;
-}
