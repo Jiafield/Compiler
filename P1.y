@@ -61,7 +61,7 @@ classdcl: normalclassdcl
 | enumdcl
 ;
 
-normalclassdcl:IDT {}
+normalclassdcl: CLASS IDT {}
 ;
 
 enumdcl: IDT {}
