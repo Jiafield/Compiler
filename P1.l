@@ -34,7 +34,7 @@ EXP ([Ee][-+][0-9]+)
 "continue" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return CONTINUE;}
 "default" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return DEFAULT;}
 "do" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return DO;}
-"double" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return DOUBLE;}
+"double" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return DOUBLETYPE;}
 "else" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return ELSE;}
 "enum" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "extends" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}

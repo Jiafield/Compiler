@@ -17,7 +17,7 @@ extern int yylex();
 %token <d> DOUBLE
 %token <s> IDT
 
-%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORTWHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC
+%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC
 
 %nonassoc CMP
 %right '='
@@ -66,22 +66,21 @@ path: IDT '.' path   {}
 | IDT                {}
 ;
 
-modifier: PUBLIC
-| PRIVATE
-| PROTECTED
+modifier: PUBLIC {}
+| PRIVATE        {}
+| PROTECTED      {}
 ;
 
-type: BYTE
-| CHAR
-| FLOAT
-| DOUBLE
-| INT
-| LONG
-| SHORT
+type: BYTE       {}
+| CHAR           {}
+| FLOAT          {}
+| DOUBLETYPE     {}
+| INT            {}
+| LONG           {}
+| SHORT          {}
 ;
 
 initializer: exp
-| '{' initializer '}'
 ;
 
 declarator: IDT
@@ -110,13 +109,13 @@ dostmt: DO block WHILE '(' exp ')' ';' {}
 whilestmt: WHILE '(' exp ')' block {}
 ;
 
-forstmt: FOR '(' ')' block
+forstmt: FOR '(' vardeclaration ';' exp ';' exp ')' block {}
 ;
 
-trystmt:
+trystmt: TRY block   {}
 ;
 
-switchstme:
+switchstmt: SWITCH '(' exp ')' block    {}
 ;
 
 returnstmt: RETURN ';' {}
