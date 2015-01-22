@@ -100,13 +100,14 @@ struct ast *newAssign(struct ast *l, struct ast *r) {
   return (struct ast *)a;
 }
 
+extern char* yytext;
 extern int yylineno;
 void yyerror(const char *s, ...) {
   va_list ap;
   va_start(ap, s);
 
   fprintf(stderr, s, ap);
-  fprintf(stderr, "\tLine:%d\n", yylineno);
+  fprintf(stderr, "\tLine:%d  %s\n", yylineno, yytext);
 }
 
 void dumpAst(struct ast *a, int level) {
@@ -141,12 +142,18 @@ void dumpAst(struct ast *a, int level) {
     dumpAst(a->l, level);
     dumpAst(a->r, level);
     break;
+  case 'L':
+    printf("Stmts\n");
+    dumpAst(a->l, level);
+    dumpAst(a->r, level);
+    break;
   default:
     printf("Bad node\n");
     return;
   }
 }
 
+extern int yyparse();
 int main() {
   return yyparse();
 }
