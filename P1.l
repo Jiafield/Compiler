@@ -37,8 +37,8 @@ EXP ([Ee][-+][0-9]+)
 "double" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return DOUBLETYPE;}
 "else" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return ELSE;}
 "enum" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
-"extends" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
-"final" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"extends" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return EXTENDS;}
+"final" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return FINAL;}
 "finally" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "float" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "for" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return FOR;}
@@ -50,7 +50,7 @@ EXP ([Ee][-+][0-9]+)
 "int" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return INT;}
 "interface" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "long" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return LONG;}
-"native" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"native" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return NATIVE;}
 "new" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "package" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return PACKAGE;}
 "private" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return PRIVATE;}
@@ -59,17 +59,17 @@ EXP ([Ee][-+][0-9]+)
 "return" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return RETURN;}
 "short" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return SHORT;}
 "static" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return STATIC;}
-"strictfp" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
-"super" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"strictfp" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return STRICTFP;}
+"super" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return SUPER;}
 "switch" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return SWITCH;}
-"synchronized" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"synchronized" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return SYNCHRONIZED;}
 "this" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "throw" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "throws" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
-"transient" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"transient" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return TRANSIENT;}
 "try" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return TRY;}
 "void" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
-"volatile" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"volatile" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return VOLATILE;}
 "while" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return WHILE;}
 
  /* Interger */

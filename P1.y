@@ -17,21 +17,135 @@ extern int yylex();
 %token <d> DOUBLE
 %token <s> IDT
 
-%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC
+%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP
 
 %nonassoc CMP
 %right '='
 %left '+' '-'
 %left '*' '/'
 
-%type <a> list stmt exp ifstmt lvalue impstmt pkgstmt path dostmt whilestmt breakstmt continuestmt returnstmt switchstmt trystmt forstmt vardeclaration modifier type
-
+%type <a> list stmt exp ifstmt lvalue importdcl pkgdcl typedcl classdcl normalclassdcl enumdcl interfacedcl normalinterfacedcl annotationtypedcl importpath dostmt whilestmt breakstmt continuestmt returnstmt switchstmt trystmt forstmt vardeclaration modifiers modifier javatype basictype referencetype typeargs typearglist typearg annotation annotations qualifiedidt qualifiedidtlist
+ 
 %start javafile
 
 %%
-javafile: list END {exit(0);}
+javafile: pkgdcl imports types END      {return 0;}
 ;
 
+pkgdcl:                                 {}
+| PACKAGE qualifiedidt ';'              {}
+| annotations PACKAGE qualifiedidt ';'  {}
+;
+
+imports:
+| importdcl imports
+;
+
+importdcl: IMPORT importpath ';'  {}
+| IMPORT STATIC importpath ';'    {}
+;
+
+importpath: qualifiedidt
+| qualifiedidt '.' '*'     {}
+;
+
+types:
+| typedcl types
+;
+
+typedcl: modifiers classdcl
+| modifiers interfacedcl
+;
+
+classdcl: normalclassdcl
+| enumdcl
+;
+
+normalclassdcl:IDT {}
+;
+
+enumdcl: IDT {}
+;
+
+interfacedcl: normalinterfacedcl
+| annotationtypedcl
+;
+
+normalinterfacedcl: IDT   {}
+;
+
+annotationtypedcl: IDT {}
+;
+
+qualifiedidt: IDT            {}
+| IDT '.' qualifiedidt       {}
+;
+
+qualifiedidtlist: qualifiedidt        {}
+| qualifiedidt ',' qualifiedidtlist   {}
+;
+
+modifiers:                  {}
+| modifier modifiers
+;
+
+modifier: PUBLIC {}
+| PRIVATE        {}
+| PROTECTED      {}
+| STATIC         {}
+| ABSTRACT       {}
+| FINAL          {}
+| NATIVE         {}
+| SYNCHRONIZED    {}
+| TRANSIENT      {}
+| VOLATILE       {}
+| STRICTFP       {}
+| annotation
+;
+
+annotations: annotation
+| annotation annotations
+;
+
+annotation: '@' qualifiedidt  {}
+;
+
+javatype: basictype
+| basictype '[' ']'
+| referencetype
+| referencetype '[' ']'
+;
+
+basictype: BYTE       {}
+| CHAR           {}
+| FLOAT          {}
+| DOUBLETYPE     {}
+| INT            {}
+| LONG           {}
+| SHORT          {}
+| BOOLEAN        {}
+;
+
+referencetype: IDT      {}
+| IDT typeargs          {}
+| IDT '.' referencetype {}
+| IDT typeargs '.' referencetype     {}
+;
+
+typeargs: '<' typearglist '>'   {}
+;
+
+typearglist: typearg
+| typearg ',' typearglist
+;
+
+typearg: referencetype       {}
+| '?'                        {}
+| '?' EXTENDS referencetype  {}
+| '?' SUPER referencetype    {}
+;
+
+/*
 list:             {$$ = NULL;}
 | stmt list   {if ($2 == NULL)
                      $$ = $1;
@@ -41,8 +155,6 @@ list:             {$$ = NULL;}
 ;
 
 stmt: exp ';'
-| pkgstmt
-| impstmt
 | ifstmt
 | dostmt
 | whilestmt
@@ -52,35 +164,6 @@ stmt: exp ';'
 | continuestmt;
 | breakstmt;
 | returnstmt;
-;
-
-pkgstmt: PACKAGE IDT ';'  {}
-;
-
-impstmt: IMPORT path ';'  {}
-| IMPORT STATIC path ';'  {}
-;
-
-path: IDT '.' path   {}
-| IDT '.' '*'        {}
-| IDT                {}
-;
-
-modifier: PUBLIC {}
-| PRIVATE        {}
-| PROTECTED      {}
-;
-
-type: BYTE       {}
-| CHAR           {}
-| FLOAT          {}
-| DOUBLETYPE     {}
-| INT            {}
-| LONG           {}
-| SHORT          {}
-;
-
-initializer: exp
 ;
 
 declarator: IDT
@@ -93,7 +176,7 @@ declarator: IDT
 | IDT'[' exp ']' '=' initializer ',' declarator
 ;
 
-vardeclaration: modifier type declarator ';'
+vardeclaration: modifier javatype declarator ';'
 ;
 
 block: '{' list '}'
@@ -145,4 +228,5 @@ exp:exp CMP exp {}
 
 lvalue:IDT {$$ = newRef($1);}
 ;
+*/
 %%
