@@ -39,8 +39,8 @@ EXP ([Ee][-+][0-9]+)
 "enum" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return ENUM;}
 "extends" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return EXTENDS;}
 "final" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return FINAL;}
-"finally" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
-"float" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"finally" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return FINALLY;}
+"float" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return FLOAT;}
 "for" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return FOR;}
 "goto" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "if" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return IF;}
@@ -64,11 +64,11 @@ EXP ([Ee][-+][0-9]+)
 "switch" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return SWITCH;}
 "synchronized" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return SYNCHRONIZED;}
 "this" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
-"throw" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"throw" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return THROW;}
 "throws" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return THROWS;}
 "transient" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return TRANSIENT;}
 "try" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return TRY;}
-"void" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"void" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return VOID;}
 "volatile" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return VOLATILE;}
 "while" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return WHILE;}
 

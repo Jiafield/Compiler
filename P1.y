@@ -17,14 +17,14 @@ extern int yylex();
 %token <d> DOUBLE
 %token <s> IDT
 
-%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROWS VOID
+%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID
 
 %nonassoc CMP
 %right '='
 %left '+' '-'
 %left '*' '/'
 
-%type <a> importdcl pkgdcl typedcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referencetype typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp
+%type <a> importdcl pkgdcl typedcl classOrInterfaceDcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referencetype typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp blockStmt blockStmts localVarDclStmt stmt parExp switchBlockStmtGroups forControl catches finally
  
 %start javafile
 
@@ -50,10 +50,13 @@ importpath: qualifiedidt '.' '*'     {}
 ;
 
 types:
-| typedcl types
+| types typedcl
 ;
 
-typedcl: modifiers classDcl
+typedcl: classOrInterfaceDcl
+;
+
+classOrInterfaceDcl: modifiers classDcl
 | modifiers interfaceDcl
 ;
 
@@ -232,9 +235,6 @@ classBodyDcl: ';'         {}
 | STATIC block            {}
 ;
 
-block: '{' '}'   {}
-;
-
 memberDcl: methodOrFieldDcl
 | VOID IDT voidMethodDclRest   {}
 | IDT constructorDclRest       {}
@@ -376,12 +376,75 @@ arrayInitializer: '{' '}'      {}
 | '{' varInitializers ',' '}'  {}
 ;
 
+block: '{' blockStmts '}'   {}
+;
+
+blockStmts:                {}
+| blockStmts blockStmt     {}
+;
+
+blockStmt: localVarDclStmt
+| classOrInterfaceDcl
+| stmt
+| IDT ':' stmt                 {}
+;
+
+localVarDclStmt: varModifiers javatype varDcls
+;
+
+stmt: block
+| ';'
+| IDT ':' stmt
+| exp ';'
+| IF parExp stmt
+| IF parExp stmt ELSE stmt
+| ASSERT exp ';'
+| ASSERT exp ':' exp ';'
+| SWITCH parExp '{' switchBlockStmtGroups '}'
+| WHILE parExp stmt
+| DO stmt WHILE parExp ';'
+| FOR '(' forControl ')' stmt
+| BREAK ';'
+| BREAK IDT ';'
+| CONTINUE ';'
+| CONTINUE IDT ';'
+| RETURN ';'
+| RETURN IDT ';'
+| THROW exp ';'
+| SYNCHRONIZED parExp block
+| TRY block catches
+| TRY block finally
+| TRY block catches finally
+| TRY resourceSpec block
+| TRY resourceSpec block catches
+| TRY resourceSpec block finally
+| TRY resourceSpec block catches finally
+;
+
 annotationtypebody: '{' '}'   {}
+;
+
+switchBlockStmtGroups: '{' '}'  {}
+;
+
+forControl: ';'  {}
+;
+
+catches: CATCH   {}
+;
+
+finally: FINALLY {}
 ;
 
 exp: expression1 '='   {}
 ;
 
+parExp: '(' exp ')'  {}
+;
+
 expression1: '+'  {}
+;
+
+resourceSpec:
 ;
 %%
