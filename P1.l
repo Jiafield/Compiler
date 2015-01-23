@@ -36,7 +36,7 @@ EXP ([Ee][-+][0-9]+)
 "do" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return DO;}
 "double" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return DOUBLETYPE;}
 "else" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return ELSE;}
-"enum" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"enum" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return ENUM;}
 "extends" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return EXTENDS;}
 "final" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return FINAL;}
 "finally" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
@@ -44,11 +44,11 @@ EXP ([Ee][-+][0-9]+)
 "for" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return FOR;}
 "goto" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "if" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return IF;}
-"implements" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"implements" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return IMPLEMENTS;}
 "import" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return IMPORT;}
 "instanceof" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "int" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return INT;}
-"interface" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"interface" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return INTERFACE;}
 "long" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return LONG;}
 "native" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return NATIVE;}
 "new" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
@@ -65,7 +65,7 @@ EXP ([Ee][-+][0-9]+)
 "synchronized" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return SYNCHRONIZED;}
 "this" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
 "throw" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
-"throws" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"throws" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return THROWS;}
 "transient" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return TRANSIENT;}
 "try" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return TRY;}
 "void" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
@@ -100,7 +100,7 @@ EXP ([Ee][-+][0-9]+)
 "<<"|">>"|">>>"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
 "=="|"!="|">"|"<"|"<="|">=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); strcpy(yylval.operator, yytext); return CMP;}
 "^"|"&"|"|"|"&&"|"||" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
-"?"|":" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
+"?"|":"|"@" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "+="|"-="|"*="|"/+"|"%="|"&="|"^="|"|="|"<<="|">>="|">>>="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
 

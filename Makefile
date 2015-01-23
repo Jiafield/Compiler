@@ -2,7 +2,7 @@ P1: P1.tab.o lex.yy.o P1funcs.o
 	gcc -g -Wall -o P1 P1.tab.o lex.yy.o P1funcs.o
 
 P1.tab.o: P1.y
-	bison -d P1.y
+	bison -dv P1.y
 	gcc -g -Wall -c P1.tab.c
 
 lex.yy.o: P1.l

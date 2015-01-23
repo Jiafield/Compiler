@@ -17,14 +17,14 @@ extern int yylex();
 %token <d> DOUBLE
 %token <s> IDT
 
-%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP
+%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROWS VOID
 
 %nonassoc CMP
 %right '='
 %left '+' '-'
 %left '*' '/'
 
-%type <a> list stmt exp ifstmt lvalue importdcl pkgdcl typedcl classdcl normalclassdcl enumdcl interfacedcl normalinterfacedcl annotationtypedcl importpath dostmt whilestmt breakstmt continuestmt returnstmt switchstmt trystmt forstmt vardeclaration modifiers modifier javatype basictype referencetype typeargs typearglist typearg annotation annotations qualifiedidt qualifiedidtlist
+%type <a> importdcl pkgdcl typedcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referencetype typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp
  
 %start javafile
 
@@ -38,55 +38,89 @@ pkgdcl:                                 {}
 ;
 
 imports:
-| importdcl imports
+| imports importdcl
 ;
 
-importdcl: IMPORT importpath ';'  {}
-| IMPORT STATIC importpath ';'    {}
+importdcl: IMPORT STATIC importpath ';'    {}
+| IMPORT importpath ';'  {}
 ;
 
-importpath: qualifiedidt
-| qualifiedidt '.' '*'     {}
+importpath: qualifiedidt '.' '*'     {}
+| qualifiedidt
 ;
 
 types:
 | typedcl types
 ;
 
-typedcl: modifiers classdcl
-| modifiers interfacedcl
+typedcl: modifiers classDcl
+| modifiers interfaceDcl
 ;
 
-classdcl: normalclassdcl
+classDcl: normalclassDcl
 | enumdcl
 ;
 
-normalclassdcl: CLASS IDT {}
+normalclassDcl: CLASS IDT typeParametersList extendslist implementslist classbody {}
 ;
 
-enumdcl: IDT {}
+enumdcl: ENUM IDT implementslist enumbody  {}
 ;
 
-interfacedcl: normalinterfacedcl
+normalinterfaceDcl: INTERFACE IDT typeParametersList extendstypelist interfacebody {}
+;
+
+annotationtypedcl: '@' INTERFACE IDT annotationtypebody {}
+;
+
+typeParametersList:   {}
+| typeParameters      {}
+
+extendslist:          {}
+| EXTENDS javatype    {}
+;
+
+extendstypelist:     {}
+| EXTENDS typelist   {}
+;
+
+implementslist:         {}
+| IMPLEMENTS typelist   {}
+;
+
+typeParameters: '<' parameterlist '>'    {}
+;
+
+parameterlist: typeparameter
+| parameterlist ',' typeparameter
+;
+
+typeparameter: IDT    {}
+| IDT EXTENDS bound   {}
+;
+
+typelist: referencetype
+| typelist ',' referencetype
+;
+
+bound: referencetype
+| referencetype '&' bound
+;
+
+interfaceDcl: normalinterfaceDcl
 | annotationtypedcl
 ;
 
-normalinterfacedcl: IDT   {}
-;
-
-annotationtypedcl: IDT {}
-;
-
 qualifiedidt: IDT            {}
-| IDT '.' qualifiedidt       {}
+| qualifiedidt '.' IDT       {}
 ;
 
 qualifiedidtlist: qualifiedidt        {}
-| qualifiedidt ',' qualifiedidtlist   {}
+| qualifiedidtlist ',' qualifiedidt   {}
 ;
 
 modifiers:                  {}
-| modifier modifiers
+| modifiers modifier
 ;
 
 modifier: PUBLIC {}
@@ -96,7 +130,7 @@ modifier: PUBLIC {}
 | ABSTRACT       {}
 | FINAL          {}
 | NATIVE         {}
-| SYNCHRONIZED    {}
+| SYNCHRONIZED   {}
 | TRANSIENT      {}
 | VOLATILE       {}
 | STRICTFP       {}
@@ -104,10 +138,37 @@ modifier: PUBLIC {}
 ;
 
 annotations: annotation
-| annotation annotations
+| annotations annotation
 ;
 
 annotation: '@' qualifiedidt  {}
+| '@' qualifiedidt '(' annotationElement ')'    {}
+;
+
+annotationElement:      {}
+| elementValuePairs
+| elementValue
+;
+
+elementValuePairs: elementValuePair
+| elementValuePairs ',' elementValuePair  {}
+;
+
+elementValuePair: IDT '=' elementValue  {}
+;
+
+elementValue: annotation
+| expression1
+| elementValueArrayInitializer
+;
+
+elementValueArrayInitializer: '{' '}'   {}
+| '{' elementValues '}'             {}
+| '{' elementValues ',' '}'             {}
+;
+
+elementValues: elementValue
+| elementValues ',' elementValue   {}
 ;
 
 javatype: basictype
@@ -126,17 +187,19 @@ basictype: BYTE       {}
 | BOOLEAN        {}
 ;
 
-referencetype: IDT      {}
-| IDT typeargs          {}
-| IDT '.' referencetype {}
-| IDT typeargs '.' referencetype     {}
+reference: IDT       {}
+| IDT typeargs       {}
+;
+
+referencetype: reference
+| referencetype '.' reference
 ;
 
 typeargs: '<' typearglist '>'   {}
 ;
 
 typearglist: typearg
-| typearg ',' typearglist
+| typearglist ',' typearg
 ;
 
 typearg: referencetype       {}
@@ -145,88 +208,180 @@ typearg: referencetype       {}
 | '?' SUPER referencetype    {}
 ;
 
-/*
-list:             {$$ = NULL;}
-| stmt list   {if ($2 == NULL)
-                     $$ = $1;
-                   else
-                     $$ = newAst('L', $1, $2);}
-| error list  {yyerrok;}
+nonWildcardTypeArgs: '<' typelist '>'  {}
 ;
 
-stmt: exp ';'
-| ifstmt
-| dostmt
-| whilestmt
-| forstmt
-| switchstmt
-| trystmt
-| continuestmt;
-| breakstmt;
-| returnstmt;
+typeargsordiamond: '<' '>'   {}
+| typeargs
 ;
 
-declarator: IDT
-| IDT ',' declarator
-| IDT '[' exp ']'
-| IDT '[' exp ']' ',' declarator
-| IDT '=' initializer
-| IDT '=' initializer ',' declarator
-| IDT'[' exp ']' '=' initializer
-| IDT'[' exp ']' '=' initializer ',' declarator
+nonWildcardTypeArgsOrDiamond: '<' '>'   {}
+| nonWildcardTypeArgs
 ;
 
-vardeclaration: modifier javatype declarator ';'
+classbody: '{' classBodyDcls '}'   {} 
 ;
 
-block: '{' list '}'
+classBodyDcls:                     {}
+| classBodyDcls classBodyDcl
 ;
 
-ifstmt: IF '(' exp ')' block       {}
-| IF '(' exp ')' block ELSE block  {}
+classBodyDcl: ';'         {}
+| modifiers memberDcl
+| block
+| STATIC block            {}
 ;
 
-dostmt: DO block WHILE '(' exp ')' ';' {}
+block: '{' '}'   {}
 ;
 
-whilestmt: WHILE '(' exp ')' block {}
+memberDcl: methodOrFieldDcl
+| VOID IDT voidMethodDclRest   {}
+| IDT constructorDclRest       {}
+| genericMethodOrConstructorDcl
+| classDcl
+| interfaceDcl
 ;
 
-forstmt: FOR '(' vardeclaration ';' exp ';' exp ')' block {}
+methodOrFieldDcl: javatype IDT methodOrFieldRest
 ;
 
-trystmt: TRY block   {}
+methodOrFieldRest: fieldDclsRest ';'   {}
+| methodDclRest
 ;
 
-switchstmt: SWITCH '(' exp ')' block    {}
+fieldDclsRest: varDclRest
+| varDclRest ',' varDcls   {}
 ;
 
-returnstmt: RETURN ';' {}
-| RETURN exp ';'       {}
+methodDclRest: formalParameters throwlist block
+| formalParameters throwlist ';'                 {}
 ;
 
-breakstmt: BREAK ';'   {}
-| BREAK IDT ';'        {}
+voidMethodDclRest: formalParameters throwlist block
+| formalParameters throwlist ';'                            {}
 ;
 
-continuestmt: CONTINUE ';'    {}
-| CONTINUE IDT ';'            {}
+constructorDclRest: formalParameters throwlist block
 ;
 
-exp:exp CMP exp {}
-| exp '+' exp {$$ = newAst('+', $1, $3);}
-| exp '-' exp {$$ = newAst('-', $1, $3);}
-| exp '*' exp {$$ = newAst('*', $1, $3);}
-| exp '/' exp {$$ = newAst('/', $1, $3);}
-| '('exp')' {$$ = $2;}
-| INTEGER {$$ = newInt($1);}
-| DOUBLE  {$$ = newFlt($1);}
-| CHARACTER {}
-| lvalue  {$$ = $1;}
-| lvalue '=' exp {$$ = newAssign($1, $3);}
+genericMethodOrConstructorDcl: typeParameters genericMethodOrConstructorRest
 ;
 
-lvalue:IDT {$$ = newRef($1);}
+genericMethodOrConstructorRest: javatype IDT methodDclRest  {}
+| VOID IDT methodDclRest {}
+| IDT constructorDclRest {} 
 ;
-*/
+
+throwlist:                   {}
+| THROWS qualifiedidtlist    {}
+;
+
+enumbody: '{' '}' {}
+;
+
+interfacebody: '{' interfaceBodyDcl '}' {}
+;
+
+interfaceBodyDcl: ';'           {}
+| modifiers interfaceMemberDcl
+;
+
+interfaceMemberDcl: interfaceMethodOrFieldDcl
+| VOID IDT voidInterfaceMethodDclRest              {}
+| interfaceGenericMethodDcl
+| classDcl
+| interfaceDcl
+;
+
+interfaceMethodOrFieldDcl: javatype IDT interfaceMethodOrFieldRest  {}
+;
+
+interfaceMethodOrFieldRest: constantDclsRest ';'
+| interfaceMethodDclRest
+;
+
+constantDclsRest: constantDclRest
+| constantDclRest ',' constantDcls
+;
+
+constantDclRest: sqBrackets '=' varInitializer    {}
+;
+
+constantDcl: IDT constantDclRest {}
+;
+
+constantDcls:                  {}
+| constantDcls ',' constantDcl {}
+;
+
+interfaceMethodDclRest: formalParameters sqBrackets throwlist ';'  {}
+;
+
+voidInterfaceMethodDclRest: formalParameters throwlist ';'    {}
+;
+
+interfaceGenericMethodDcl: typeParameters javatype IDT interfaceMethodDclRest   {}
+| typeParameters VOID IDT interfaceMethodDclRest    {}
+;
+
+sqBrackets:           {}
+| sqBrackets '[' ']'  {}
+;
+
+formalParameters: '(' ')'          {}
+| '(' formalParameterDcls ')'      {}
+;
+
+formalParameterDcls: varModifiers javatype formalParameterDclsRest
+;
+
+varModifier: FINAL      {}
+| annotation
+;
+
+varModifiers:                  {}
+| varModifiers varModifier
+; 
+
+formalParameterDclsRest: varDclId
+| varDclId ',' formalParameterDcls  {}
+| '.' '.' '.' varDclId              {}
+;
+
+varDclId: IDT sqBrackets   {}
+;
+
+varDcls: varDcl
+| varDcls varDcl
+;
+
+varDcl: IDT varDclRest   {}
+;
+
+varDclRest: sqBrackets
+| sqBrackets '=' varInitializer   {}
+;
+
+varInitializer: arrayInitializer
+| exp
+;
+
+varInitializers: varInitializer
+| varInitializers ',' varInitializer   {}
+;
+
+arrayInitializer: '{' '}'      {}
+| '{' varInitializers '}'      {}
+| '{' varInitializers ',' '}'  {}
+;
+
+annotationtypebody: '{' '}'   {}
+;
+
+exp: expression1 '='   {}
+;
+
+expression1: '+'  {}
+;
 %%
