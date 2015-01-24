@@ -17,14 +17,14 @@ extern int yylex();
 %token <d> DOUBLE
 %token <s> IDT
 
-%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID
+%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID INSTANCEOF ASSIGN
 
 %nonassoc CMP
 %right '='
 %left '+' '-'
 %left '*' '/'
 
-%type <a> importdcl pkgdcl typedcl classOrInterfaceDcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referenceType typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp blockStmt blockStmts localVarDclStmt stmt parExp switchBlockStmtGroups forControl catches catchClause catchType finally resourceSpec resources resource switchBlockStmtGroup switchLabels switchLabel enumConstantName forVarControl forVarControlRest forVarDclsRest forInit forUpdate
+%type <a> importdcl pkgdcl typedcl classOrInterfaceDcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referenceType typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp blockStmt blockStmts localVarDclStmt stmt parExp switchBlockStmtGroups forControl catches catchClause catchType finally resourceSpec resources resource switchBlockStmtGroup switchLabels switchLabel enumConstantName forVarControl forVarControlRest forVarDclsRest forInit forUpdate assignOp exp2 exp1Rest exp3 exp2Rest
  
 %start javafile
 
@@ -161,7 +161,7 @@ elementValuePair: IDT '=' elementValue  {}
 ;
 
 elementValue: annotation
-| expression1
+| exp1
 | elementValueArrayInitializer
 ;
 
@@ -174,10 +174,8 @@ elementValues: elementValue
 | elementValues ',' elementValue   {}
 ;
 
-javatype: basictype
-| basictype '[' ']'
-| referenceType
-| referenceType '[' ']'
+javatype: basictype sqBrackets
+| referenceType sqBrackets
 ;
 
 basictype: BYTE       {}
@@ -484,7 +482,10 @@ forVarControlRest: ':' exp  {}
 | forVarDclsRest ';' ';' forUpdate
 ;
 
-forVarDclsRest: '='
+forVarDclsRest:     {}
+| '=' varInitializer  {}
+| ',' varDcls         {}
+| '=' varInitializer ',' varDcls  {}
 ;
 
 forInit: exp
@@ -495,13 +496,32 @@ forUpdate: exp
 | forUpdate ',' exp    {}
 ;
 
-exp: expression1 '='   {}
+exp: exp1
+| exp1 assignOp exp1
+;
+
+assignOp: '='  {}
+| ASSIGN       {}
+;
+
+exp1: exp2
+| exp2 exp1Rest
+;
+
+exp1Rest: '?' exp ':' exp1  {}
+;
+
+exp2: exp3
+| exp3 exp2Rest
+;
+
+exp2Rest: INSTANCEOF javatype
+| '|'
+;
+
+exp3: '-'
 ;
 
 parExp: '(' exp ')'  {}
 ;
-
-expression1: '+'  {}
-;
-
 %%

@@ -46,7 +46,7 @@ EXP ([Ee][-+][0-9]+)
 "if" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return IF;}
 "implements" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return IMPLEMENTS;}
 "import" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return IMPORT;}
-"instanceof" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"instanceof" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return INSTANCEOF;}
 "int" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return INT;}
 "interface" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return INTERFACE;}
 "long" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return LONG;}
@@ -102,7 +102,7 @@ EXP ([Ee][-+][0-9]+)
 "^"|"&"|"|"|"&&"|"||" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
 "?"|":"|"@" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
-"+="|"-="|"*="|"/+"|"%="|"&="|"^="|"|="|"<<="|">>="|">>>="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
+"+="|"-="|"*="|"/+"|"%="|"&="|"^="|"|="|"<<="|">>="|">>>="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return ASSIGN;}
 
 
  /* Identifier */
