@@ -24,7 +24,7 @@ extern int yylex();
 %left '+' '-'
 %left '*' '/'
 
-%type <a> importdcl pkgdcl typedcl classOrInterfaceDcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referenceType typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp blockStmt blockStmts localVarDclStmt stmt parExp switchBlockStmtGroups forControl catches catchClause catchType finally resourceSpec resources resource switchBlockStmtGroup switchLabels switchLabel enumConstantName forVarControl forVarControlRest forVarDclsRest forInit forUpdate assignOp exp2 exp1Rest exp3 exp2Rest infixRight infixOp prefixOp postfixOp postfixOps primary literal args superSuffix creator explicitGenericInvocationSuffix idts idtSuffix createName typeargsordiamonds createNameRest classCreatorRest explicitGenericInvocation innerCreator
+%type <a> importdcl pkgdcl typedcl classOrInterfaceDcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referenceType typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp blockStmt blockStmts localVarDclStmt stmt parExp switchBlockStmtGroups forControl catches catchClause catchType finally resourceSpec resources resource switchBlockStmtGroup switchLabels switchLabel enumConstantName forVarControl forVarControlRest forVarDclsRest forInit forUpdate assignOp exp2 exp1Rest exp3 exp2Rest infixOp prefixOp postfixOp postfixOps primary literal args superSuffix creator explicitGenericInvocationSuffix idts idtSuffix createName classCreatorRest explicitGenericInvocation innerCreator
  
 %start javafile
 
@@ -384,7 +384,6 @@ blockStmts:                {}
 blockStmt: localVarDclStmt
 | classOrInterfaceDcl
 | stmt
-| IDT ':' stmt                 {}
 ;
 
 localVarDclStmt: varModifiers javatype varDcls
@@ -419,7 +418,7 @@ stmt: block
 | TRY resourceSpec block catches finally
 ;
 
-catches:               {}
+catches: catchClause
 | catches catchClause
 
 catchClause: CATCH '(' varModifiers catchType IDT ')' block  {}
@@ -441,9 +440,6 @@ resources: resource
 ;
 
 resource: varModifiers referenceType varDclId '=' exp
-;
-
-annotationtypebody: '{' '}'   {}
 ;
 
 switchBlockStmtGroups:     {}
@@ -516,10 +512,6 @@ exp2: exp3
 ;
 
 exp2Rest: INSTANCEOF javatype
-| infixRight
-;
-
-infixRight:    {}
 | infixOp exp3
 ;
 
@@ -609,15 +601,10 @@ creator: nonWildcardTypeArgs createName classCreatorRest
 | createName arrayCreatorRest
 ;
 
-createName: IDT typeargsordiamonds createNameRest {}
-;
-
-typeargsordiamonds:    {}
-| typeargsordiamond
-;
-
-createNameRest:                           {}
-| createNameRest '.' typeargsordiamonds   {}
+createName: IDT typeargsordiamond
+| IDT
+| createName '.' IDT
+| createName '.' IDT typeargsordiamond
 ;
 
 classCreatorRest: args
@@ -627,7 +614,15 @@ classCreatorRest: args
 arrayCreatorRest: '.'    {}
 ;
 
-idtSuffix:
+idtSuffix: args
+| '[' sqBrackets '.' CLASS
+| '[' exp ']'
+| '.' CLASS
+| '.' explicitGenericInvocation
+| '.' THIS
+| '.' SUPER args
+| '.' NEW nonWildcardTypeArgs innerCreator
+| '.' NEW innerCreator
 ;
 
 explicitGenericInvocation: nonWildcardTypeArgs explicitGenericInvocationSuffix
@@ -651,6 +646,7 @@ selectors:
 | selectors selector
 ;
 
-
+annotationtypebody: '{' '}'   {}
+;
 
 %%
