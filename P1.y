@@ -24,7 +24,7 @@ extern int yylex();
 %left '+' '-'
 %left '*' '/'
 
-%type <a> importdcl pkgdcl typedcl classOrInterfaceDcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referenceType typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp blockStmt blockStmts localVarDclStmt stmt parExp switchBlockStmtGroups forControl catches catchClause catchType finally resourceSpec resources resource switchBlockStmtGroup switchLabels switchLabel enumConstantName forVarControl forVarControlRest forVarDclsRest forInit forUpdate assignOp exp2 exp1Rest exp3 exp2Rest infixRight infixOp prefixOp postfixOp postfixOps primary literal args superSuffix creator explicitGenericInvocationSuffix idts idtSuffix createName typeargsordiamonds createNameRest classCreatorRest 
+%type <a> importdcl pkgdcl typedcl classOrInterfaceDcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referenceType typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp blockStmt blockStmts localVarDclStmt stmt parExp switchBlockStmtGroups forControl catches catchClause catchType finally resourceSpec resources resource switchBlockStmtGroup switchLabels switchLabel enumConstantName forVarControl forVarControlRest forVarDclsRest forInit forUpdate assignOp exp2 exp1Rest exp3 exp2Rest infixRight infixOp prefixOp postfixOp postfixOps primary literal args superSuffix creator explicitGenericInvocationSuffix idts idtSuffix createName typeargsordiamonds createNameRest classCreatorRest explicitGenericInvocation innerCreator
  
 %start javafile
 
@@ -627,14 +627,30 @@ classCreatorRest: args
 arrayCreatorRest: '.'    {}
 ;
 
-selector:
+idtSuffix:
 ;
 
-idtSuffix:
+explicitGenericInvocation: nonWildcardTypeArgs explicitGenericInvocationSuffix
+;
+
+innerCreator: IDT classCreatorRest
+| IDT nonWildcardTypeArgsOrDiamond classCreatorRest
+;
+
+selector: '.' IDT
+| '.' IDT args
+| '.' explicitGenericInvocation
+| '.' THIS
+| '.' SUPER superSuffix
+| '.' NEW innerCreator
+| '.' NEW nonWildcardTypeArgs innerCreator
+| '[' exp ']'
 ;
 
 selectors:
 | selectors selector
 ;
+
+
 
 %%
