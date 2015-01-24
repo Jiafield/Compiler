@@ -51,7 +51,7 @@ EXP ([Ee][-+][0-9]+)
 "interface" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return INTERFACE;}
 "long" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return LONG;}
 "native" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return NATIVE;}
-"new" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"new" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return NEW;}
 "package" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return PACKAGE;}
 "private" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return PRIVATE;}
 "protected" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return PROTECTED;}
@@ -63,7 +63,7 @@ EXP ([Ee][-+][0-9]+)
 "super" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return SUPER;}
 "switch" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return SWITCH;}
 "synchronized" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return SYNCHRONIZED;}
-"this" {printf("KEY\t%s\t\t%d\n", yytext, yylineno);}
+"this" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return THIS;}
 "throw" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return THROW;}
 "throws" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return THROWS;}
 "transient" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return TRANSIENT;}
@@ -71,6 +71,9 @@ EXP ([Ee][-+][0-9]+)
 "void" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return VOID;}
 "volatile" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return VOLATILE;}
 "while" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return WHILE;}
+"true" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return TRUE;}
+"false" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return FALSE;}
+"null" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return NULLSYM;}
 
  /* Interger */
 0[0-7]* |
@@ -89,17 +92,19 @@ EXP ([Ee][-+][0-9]+)
 \'([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+])\' {printf("CHAR\t%s\t\t%d\n", yytext, yylineno); return CHARACTER;}
 
  /* String */
-\"([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+])*\" {printf("STR\t%s\t\t%d\n", yytext, yylineno);}
+\"([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+])*\" {printf("STR\t%s\t\t%d\n", yytext, yylineno); return STRING;}
 
 
  /* Punctuarions */
 "{"|"}"|"["|"]"|"("|")"|"."|";"|"," {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
-"++"|"--"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
+"++"|"--"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return PREPOSTFIX;}
 "+"|"-"|"~"|"!" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "*"|"/"|"%" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
-"<<"|">>"|">>>"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
-"=="|"!="|">"|"<"|"<="|">=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); strcpy(yylval.operator, yytext); return CMP;}
-"^"|"&"|"|"|"&&"|"||" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno);}
+"<<"|">>"|">>>"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return SHIFTOP;}
+"=="|"!="|"<="|">=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return CMP;}
+">" | "<" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
+"^"|"&"|"|" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
+"&&"|"||" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return LOGICOP;}
 "?"|":"|"@" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "+="|"-="|"*="|"/+"|"%="|"&="|"^="|"|="|"<<="|">>="|">>>="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return ASSIGN;}
