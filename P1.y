@@ -20,11 +20,11 @@ extern int yylex();
 %token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID INSTANCEOF ASSIGN CMP LOGICOP SHIFTOP PREPOSTFIX THIS NEW STRING TRUE FALSE NULLSYM
 
 %nonassoc CMP
-%right '='
+%right '=' ASSIGN
 %left '+' '-'
-%left '*' '/'
+%left '*' '/' '%'
 
-%type <a> importdcl pkgdcl typedcl classOrInterfaceDcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referenceType typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp blockStmt blockStmts localVarDclStmt stmt parExp switchBlockStmtGroups forControl catches catchClause catchType finally resourceSpec resources resource switchBlockStmtGroup switchLabels switchLabel enumConstantName forVarControl forVarControlRest forVarDclsRest forInit forUpdate assignOp exp2 exp1Rest exp3 exp2Rest infixOp prefixOp postfixOp postfixOps primary literal args superSuffix creator explicitGenericInvocationSuffix idts idtSuffix createName classCreatorRest explicitGenericInvocation innerCreator
+%type <a> importdcl pkgdcl typedcl classOrInterfaceDcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referenceType typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp blockStmt blockStmts localVarDclStmt stmt parExp switchBlockStmtGroups forControl catches catchClause catchType finally resourceSpec resources resource switchBlockStmtGroup switchLabels switchLabel enumConstantName forVarControl forVarControlRest forVarDclsRest forInit forUpdate assignOp exp2 exp1Rest exp3 exp2Rest infixOp prefixOp postfixOp postfixOps primary literal args superSuffix creator explicitGenericInvocationSuffix idts idtSuffix createName classCreatorRest explicitGenericInvocation innerCreator enumConstants enumConstant enumBodyDcl annotationTypeElementDcls annotationTypeElementDcl annotationTypeElementRest annotationMethodOrConstantRest annotationMethodRest
  
 %start javafile
 
@@ -67,7 +67,7 @@ classDcl: normalclassDcl
 normalclassDcl: CLASS IDT typeParametersList extendslist implementslist classbody {}
 ;
 
-enumdcl: ENUM IDT implementslist enumbody  {}
+enumdcl: ENUM IDT implementslist enumBody  {}
 ;
 
 normalinterfaceDcl: INTERFACE IDT typeParametersList extendstypelist interfacebody {}
@@ -273,9 +273,6 @@ genericMethodOrConstructorRest: javatype IDT methodDclRest  {}
 
 throwlist:                   {}
 | THROWS qualifiedidtlist    {}
-;
-
-enumbody: '{' '}' {}
 ;
 
 interfacebody: '{' interfaceBodyDcl '}' {}
@@ -646,7 +643,43 @@ selectors:
 | selectors selector
 ;
 
-annotationtypebody: '{' '}'   {}
+enumBody: '{' enumConstants enumBodyDcl '}'
 ;
 
+enumConstants:
+| enumConstants ',' enumConstant
+;
+
+enumConstant: IDT
+;
+
+enumBodyDcl: 
+| ';'
+| ';' classBodyDcls
+;
+
+annotationtypebody: '{' annotationTypeElementDcls '}'   {}
+;
+
+annotationTypeElementDcls:
+| annotationTypeElementDcls annotationTypeElementDcl
+;
+
+annotationTypeElementDcl: modifiers annotationTypeElementRest
+;
+
+annotationTypeElementRest: javatype IDT annotationMethodOrConstantRest ';'
+| classDcl
+| interfaceDcl
+;
+
+annotationMethodOrConstantRest: annotationMethodRest
+| constantDclsRest
+;
+
+annotationMethodRest: '(' ')'
+| '(' ')' '[' ']'
+| '(' ')' DEFAULT elementValue
+| '(' ')' '[' ']' DEFAULT elementValue
+;
 %%
