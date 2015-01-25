@@ -17,7 +17,7 @@ extern int yylex();
 %token <d> DOUBLE
 %token <s> IDT
 
-%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM EQUALITY
+%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -34,7 +34,7 @@ extern int yylex();
 %right NEW
 %right '!' '~'
 %right PREPOSTFIX 
-%left  '.' '(' ')' '[' ']'
+%left  '.'
 
 %start javafile
 
@@ -43,7 +43,7 @@ javafile: pkgdcl imports types END      {return 0;}
 ;
 
 pkgdcl:                                 
-| PACKAGE qualifiedidt ';'              
+| PACKAGE qualifiedidt ';'
 | annotations PACKAGE qualifiedidt ';'  
 ;
 
@@ -76,7 +76,7 @@ classDcl: normalclassDcl
 | enumdcl
 ;
 
-normalclassDcl: CLASS IDT typeParametersList extendslist implementslist classbody 
+normalclassDcl: CLASS IDT typeParametersList extendslist implementslist classbody
 ;
 
 enumdcl: ENUM IDT implementslist enumBody  
@@ -90,6 +90,7 @@ annotationtypedcl: '@' INTERFACE IDT annotationtypebody
 
 typeParametersList:   
 | typeParameters      
+;
 
 extendslist:          
 | EXTENDS javatype    
@@ -103,7 +104,7 @@ implementslist:
 | IMPLEMENTS typelist   
 ;
 
-typeParameters: '<' parameterlist '>'    
+typeParameters: '<' parameterlist '>'
 ;
 
 parameterlist: typeparameter
@@ -335,7 +336,7 @@ sqBrackets:
 | sqBrackets '[' ']'  
 ;
 
-formalParameters: '(' ')'          
+formalParameters: '(' ')'  
 | '(' formalParameterDcls ')'      
 ;
 
@@ -387,8 +388,8 @@ blockStmt: localVarDclStmt
 | stmt
 ;
 
-localVarDclStmt: FINAL javatype varDcls ';'
-| annotation javatype varDcls ';'
+localVarDclStmt:  javatype varDcls ';'
+| modifiers javatype varDcls ';'
 ;
 
 stmt: block
@@ -442,8 +443,8 @@ resources: resource
 | resources ';' resource
 ;
 
-resource: FINAL referenceType varDclId '=' exp
-| annotation referenceType varDclId '=' exp
+resource:  referenceType varDclId '=' exp
+| modifiers referenceType varDclId '=' exp
 ;
 
 switchBlockStmtGroups:     
@@ -522,6 +523,7 @@ exp2Rest: INSTANCEOF javatype
 
 infixCat: infixOp exp3
 | infixCat infixOp exp3
+;
 
 infixOp: LOGICOR
 | LOGICAND
@@ -680,7 +682,7 @@ annotationTypeElementDcls:
 ;
 
 annotationTypeElementDcl: annotationTypeElementRest
-modifiers annotationTypeElementRest
+| modifiers annotationTypeElementRest
 ;
 
 annotationTypeElementRest: javatype IDT annotationMethodOrConstantRest ';'
