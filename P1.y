@@ -17,7 +17,7 @@ extern int yylex();
 %token <d> DOUBLE
 %token <s> IDT
 
-%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID INSTANCEOF ASSIGN CMP LOGICOR LOGICAND SHIFTOP PREPOSTFIX THIS NEW STRING TRUE FALSE NULLSYM EQUALITY
+%token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM EQUALITY
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -33,30 +33,29 @@ extern int yylex();
 %left '*' '/' '%'
 %right NEW
 %right '!' '~'
-%left  '.'
+%right PREPOSTFIX 
+%left  '.' '(' ')' '[' ']'
 
-%type <a> importdcl pkgdcl typedcl classOrInterfaceDcl classDcl normalclassDcl enumdcl interfaceDcl normalinterfaceDcl annotationtypedcl importpath modifiers modifier javatype basictype reference referenceType typeargs typearglist typearg annotation annotations annotationElement elementValuePairs elementValuePair elementValue elementValueArrayInitializer elementValues qualifiedidt qualifiedidtlist typeParameters typeParametersList parameterlist typeparameter bound typelist extendslist implementslist extendstypelist interfacebody annotationtypebody nonWildcardTypeArgs typeargsordiamond nonWildcardTypeArgsOrDiamond classbody classBodyDcls classBodyDcl memberDcl block methodOrFieldDcl methodOrFieldRest fieldDclsRest methodDclRest voidMethodDclRest constructorDclRest genericMethodOrConstructorRest genericMethodOrConstructorDcl throwlist interfaceBodyDcl interfaceMemberDcl interfaceMethodOrFieldDcl interfaceMethodOrFieldRest constantDclsRest constantDclRest constantDcl constantDcls interfaceMethodDclRest voidInterfaceMethodDclRest interfaceGenericMethodDcl sqBrackets formalParameterDcls varModifiers varModifier formalParameterDclsRest varDclId varDcls varDcl varDclRest varInitializer varInitializers arrayInitializer exp blockStmt blockStmts localVarDclStmt stmt parExp switchBlockStmtGroups forControl catches catchClause catchType finally resourceSpec resources resource switchBlockStmtGroup switchLabels switchLabel enumConstantName forVarControl forVarControlRest forVarDclsRest forInit forUpdate assignOp exp2 exp1Rest exp3 exp2Rest infixOp prefixOp postfixOp postfixOps primary literal args superSuffix creator explicitGenericInvocationSuffix idts idtSuffix createName classCreatorRest explicitGenericInvocation innerCreator enumConstants enumConstant enumBodyDcl annotationTypeElementDcls annotationTypeElementDcl annotationTypeElementRest annotationMethodOrConstantRest annotationMethodRest
- 
 %start javafile
 
 %%
 javafile: pkgdcl imports types END      {return 0;}
 ;
 
-pkgdcl:                                 {}
-| PACKAGE qualifiedidt ';'              {}
-| annotations PACKAGE qualifiedidt ';'  {}
+pkgdcl:                                 
+| PACKAGE qualifiedidt ';'              
+| annotations PACKAGE qualifiedidt ';'  
 ;
 
 imports:
 | imports importdcl
 ;
 
-importdcl: IMPORT STATIC importpath ';'    {}
-| IMPORT importpath ';'  {}
+importdcl: IMPORT STATIC importpath ';'    
+| IMPORT importpath ';'  
 ;
 
-importpath: qualifiedidt '.' '*'     {}
+importpath: qualifiedidt '.' '*'     
 | qualifiedidt
 ;
 
@@ -67,7 +66,9 @@ types:
 typedcl: classOrInterfaceDcl
 ;
 
-classOrInterfaceDcl: modifiers classDcl
+classOrInterfaceDcl: classDcl
+| interfaceDcl
+| modifiers classDcl
 | modifiers interfaceDcl
 ;
 
@@ -75,42 +76,42 @@ classDcl: normalclassDcl
 | enumdcl
 ;
 
-normalclassDcl: CLASS IDT typeParametersList extendslist implementslist classbody {}
+normalclassDcl: CLASS IDT typeParametersList extendslist implementslist classbody 
 ;
 
-enumdcl: ENUM IDT implementslist enumBody  {}
+enumdcl: ENUM IDT implementslist enumBody  
 ;
 
-normalinterfaceDcl: INTERFACE IDT typeParametersList extendstypelist interfacebody {}
+normalinterfaceDcl: INTERFACE IDT typeParametersList extendstypelist interfacebody 
 ;
 
-annotationtypedcl: '@' INTERFACE IDT annotationtypebody {}
+annotationtypedcl: '@' INTERFACE IDT annotationtypebody 
 ;
 
-typeParametersList:   {}
-| typeParameters      {}
+typeParametersList:   
+| typeParameters      
 
-extendslist:          {}
-| EXTENDS javatype    {}
+extendslist:          
+| EXTENDS javatype    
 ;
 
-extendstypelist:     {}
-| EXTENDS typelist   {}
+extendstypelist:     
+| EXTENDS typelist   
 ;
 
-implementslist:         {}
-| IMPLEMENTS typelist   {}
+implementslist:         
+| IMPLEMENTS typelist   
 ;
 
-typeParameters: '<' parameterlist '>'    {}
+typeParameters: '<' parameterlist '>'    
 ;
 
 parameterlist: typeparameter
 | parameterlist ',' typeparameter
 ;
 
-typeparameter: IDT    {}
-| IDT EXTENDS bound   {}
+typeparameter: IDT    
+| IDT EXTENDS bound   
 ;
 
 typelist: referenceType
@@ -125,29 +126,29 @@ interfaceDcl: normalinterfaceDcl
 | annotationtypedcl
 ;
 
-qualifiedidt: IDT            {}
-| qualifiedidt '.' IDT       {}
+qualifiedidt: IDT            
+| qualifiedidt '.' IDT       
 ;
 
-qualifiedidtlist: qualifiedidt        {}
-| qualifiedidtlist ',' qualifiedidt   {}
+qualifiedidtlist: qualifiedidt        
+| qualifiedidtlist ',' qualifiedidt   
 ;
 
-modifiers:                  {}
+modifiers: modifier    
 | modifiers modifier
 ;
 
-modifier: PUBLIC {}
-| PRIVATE        {}
-| PROTECTED      {}
-| STATIC         {}
-| ABSTRACT       {}
-| FINAL          {}
-| NATIVE         {}
-| SYNCHRONIZED   {}
-| TRANSIENT      {}
-| VOLATILE       {}
-| STRICTFP       {}
+modifier: PUBLIC 
+| PRIVATE        
+| PROTECTED      
+| STATIC         
+| ABSTRACT       
+| FINAL          
+| NATIVE         
+| SYNCHRONIZED   
+| TRANSIENT      
+| VOLATILE       
+| STRICTFP       
 | annotation
 ;
 
@@ -155,20 +156,20 @@ annotations: annotation
 | annotations annotation
 ;
 
-annotation: '@' qualifiedidt  {}
-| '@' qualifiedidt '(' annotationElement ')'    {}
+annotation: '@' qualifiedidt  
+| '@' qualifiedidt '(' annotationElement ')'    
 ;
 
-annotationElement:      {}
+annotationElement:      
 | elementValuePairs
 | elementValue
 ;
 
 elementValuePairs: elementValuePair
-| elementValuePairs ',' elementValuePair  {}
+| elementValuePairs ',' elementValuePair  
 ;
 
-elementValuePair: IDT '=' elementValue  {}
+elementValuePair: IDT '=' elementValue  
 ;
 
 elementValue: annotation
@@ -176,77 +177,75 @@ elementValue: annotation
 | elementValueArrayInitializer
 ;
 
-elementValueArrayInitializer: '{' '}'   {}
-| '{' elementValues '}'             {}
-| '{' elementValues ',' '}'             {}
+elementValueArrayInitializer: '{' '}'   
+| '{' elementValues '}'             
+| '{' elementValues ',' '}'             
 ;
 
 elementValues: elementValue
-| elementValues ',' elementValue   {}
+| elementValues ',' elementValue   
 ;
 
 javatype: basictype sqBrackets
 | referenceType sqBrackets
 ;
 
-basictype: BYTE       {}
-| CHAR           {}
-| FLOAT          {}
-| DOUBLETYPE     {}
-| INT            {}
-| LONG           {}
-| SHORT          {}
-| BOOLEAN        {}
+basictype: BYTE       
+| CHAR           
+| FLOAT          
+| DOUBLETYPE     
+| INT            
+| LONG           
+| SHORT          
+| BOOLEAN        
 ;
 
-reference: IDT       {}
-| IDT typeargs       {}
+referenceType: idts
+| referenceType '.' idts
 ;
 
-referenceType: reference
-| referenceType '.' reference
-;
-
-typeargs: '<' typearglist '>'   {}
+typeargs: '<' typearglist '>'   
 ;
 
 typearglist: typearg
 | typearglist ',' typearg
 ;
 
-typearg: referenceType       {}
-| '?'                        {}
-| '?' EXTENDS referenceType  {}
-| '?' SUPER referenceType    {}
+typearg: referenceType       
+| '?'                        
+| '?' EXTENDS referenceType  
+| '?' SUPER referenceType    
 ;
 
-nonWildcardTypeArgs: '<' typelist '>'  {}
+/*
+nonWildcardTypeArgs: '<' typelist '>'  
 ;
 
-typeargsordiamond: '<' '>'   {}
+typeargsordiamond: '<' '>'   
 | typeargs
 ;
 
-nonWildcardTypeArgsOrDiamond: '<' '>'   {}
+nonWildcardTypeArgsOrDiamond: '<' '>'   
 | nonWildcardTypeArgs
 ;
-
-classbody: '{' classBodyDcls '}'   {} 
+*/
+classbody: '{' classBodyDcls '}'    
 ;
 
-classBodyDcls:                     {}
+classBodyDcls:                     
 | classBodyDcls classBodyDcl
 ;
 
-classBodyDcl: ';'         {}
+classBodyDcl: ';' 
+| memberDcl        
 | modifiers memberDcl
 | block
-| STATIC block            {}
+| STATIC block            
 ;
 
 memberDcl: methodOrFieldDcl
-| VOID IDT voidMethodDclRest   {}
-| IDT constructorDclRest       {}
+| VOID IDT voidMethodDclRest   
+| IDT constructorDclRest       
 | genericMethodOrConstructorDcl
 | classDcl
 | interfaceDcl
@@ -255,20 +254,20 @@ memberDcl: methodOrFieldDcl
 methodOrFieldDcl: javatype IDT methodOrFieldRest
 ;
 
-methodOrFieldRest: fieldDclsRest ';'   {}
+methodOrFieldRest: fieldDclsRest ';'   
 | methodDclRest
 ;
 
 fieldDclsRest: varDclRest
-| varDclRest ',' varDcls   {}
+| varDclRest ',' varDcls   
 ;
 
 methodDclRest: formalParameters throwlist block
-| formalParameters throwlist ';'                 {}
+| formalParameters throwlist ';'                 
 ;
 
 voidMethodDclRest: formalParameters throwlist block
-| formalParameters throwlist ';'                            {}
+| formalParameters throwlist ';'                            
 ;
 
 constructorDclRest: formalParameters throwlist block
@@ -277,30 +276,31 @@ constructorDclRest: formalParameters throwlist block
 genericMethodOrConstructorDcl: typeParameters genericMethodOrConstructorRest
 ;
 
-genericMethodOrConstructorRest: javatype IDT methodDclRest  {}
-| VOID IDT methodDclRest {}
-| IDT constructorDclRest {} 
+genericMethodOrConstructorRest: javatype IDT methodDclRest  
+| VOID IDT methodDclRest 
+| IDT constructorDclRest  
 ;
 
-throwlist:                   {}
-| THROWS qualifiedidtlist    {}
+throwlist:                   
+| THROWS qualifiedidtlist    
 ;
 
-interfacebody: '{' interfaceBodyDcl '}' {}
+interfacebody: '{' interfaceBodyDcl '}' 
 ;
 
-interfaceBodyDcl: ';'           {}
+interfaceBodyDcl: ';'
+| interfaceMemberDcl       
 | modifiers interfaceMemberDcl
 ;
 
 interfaceMemberDcl: interfaceMethodOrFieldDcl
-| VOID IDT voidInterfaceMethodDclRest              {}
+| VOID IDT voidInterfaceMethodDclRest              
 | interfaceGenericMethodDcl
 | classDcl
 | interfaceDcl
 ;
 
-interfaceMethodOrFieldDcl: javatype IDT interfaceMethodOrFieldRest  {}
+interfaceMethodOrFieldDcl: javatype IDT interfaceMethodOrFieldRest  
 ;
 
 interfaceMethodOrFieldRest: constantDclsRest ';'
@@ -311,62 +311,55 @@ constantDclsRest: constantDclRest
 | constantDclRest ',' constantDcls
 ;
 
-constantDclRest: sqBrackets '=' varInitializer    {}
+constantDclRest: sqBrackets '=' varInitializer    
 ;
 
-constantDcl: IDT constantDclRest {}
+constantDcl: IDT constantDclRest 
 ;
 
-constantDcls:                  {}
-| constantDcls ',' constantDcl {}
+constantDcls:                  
+| constantDcls ',' constantDcl 
 ;
 
-interfaceMethodDclRest: formalParameters sqBrackets throwlist ';'  {}
+interfaceMethodDclRest: formalParameters sqBrackets throwlist ';'  
 ;
 
-voidInterfaceMethodDclRest: formalParameters throwlist ';'    {}
+voidInterfaceMethodDclRest: formalParameters throwlist ';'    
 ;
 
-interfaceGenericMethodDcl: typeParameters javatype IDT interfaceMethodDclRest   {}
-| typeParameters VOID IDT interfaceMethodDclRest    {}
+interfaceGenericMethodDcl: typeParameters javatype IDT interfaceMethodDclRest   
+| typeParameters VOID IDT interfaceMethodDclRest    
 ;
 
-sqBrackets:           {}
-| sqBrackets '[' ']'  {}
+sqBrackets:           
+| sqBrackets '[' ']'  
 ;
 
-formalParameters: '(' ')'          {}
-| '(' formalParameterDcls ')'      {}
+formalParameters: '(' ')'          
+| '(' formalParameterDcls ')'      
 ;
 
-formalParameterDcls: varModifiers javatype formalParameterDclsRest
+formalParameterDcls: formalParameterDclsRest
+| modifiers javatype formalParameterDclsRest
 ;
-
-varModifier: FINAL      {}
-| annotation
-;
-
-varModifiers:                  {}
-| varModifiers varModifier
-; 
 
 formalParameterDclsRest: varDclId
-| varDclId ',' formalParameterDcls  {}
-| '.' '.' '.' varDclId              {}
+| varDclId ',' formalParameterDcls  
+| '.' '.' '.' varDclId              
 ;
 
-varDclId: IDT sqBrackets   {}
+varDclId: IDT sqBrackets   
 ;
 
 varDcls: varDcl
 | varDcls varDcl
 ;
 
-varDcl: IDT varDclRest   {}
+varDcl: IDT varDclRest   
 ;
 
 varDclRest: sqBrackets
-| sqBrackets '=' varInitializer   {}
+| sqBrackets '=' varInitializer   
 ;
 
 varInitializer: arrayInitializer
@@ -374,19 +367,19 @@ varInitializer: arrayInitializer
 ;
 
 varInitializers: varInitializer
-| varInitializers ',' varInitializer   {}
+| varInitializers ',' varInitializer   
 ;
 
-arrayInitializer: '{' '}'      {}
-| '{' varInitializers '}'      {}
-| '{' varInitializers ',' '}'  {}
+arrayInitializer: '{' '}'      
+| '{' varInitializers '}'      
+| '{' varInitializers ',' '}'  
 ;
 
-block: '{' blockStmts '}'   {}
+block: '{' blockStmts '}'   
 ;
 
-blockStmts:                {}
-| blockStmts blockStmt     {}
+blockStmts:                
+| blockStmts blockStmt     
 ;
 
 blockStmt: localVarDclStmt
@@ -394,7 +387,8 @@ blockStmt: localVarDclStmt
 | stmt
 ;
 
-localVarDclStmt: varModifiers javatype varDcls
+localVarDclStmt: FINAL javatype varDcls ';'
+| annotation javatype varDcls ';'
 ;
 
 stmt: block
@@ -429,17 +423,18 @@ stmt: block
 catches: catchClause
 | catches catchClause
 
-catchClause: CATCH '(' varModifiers catchType IDT ')' block  {}
+catchClause: CATCH '(' modifiers catchType IDT ')' block 
+| CATCH '(' catchType IDT ')' block 
 ;
 
 catchType: qualifiedidt
 | catchType '|' qualifiedidt
 ;
 
-finally: FINALLY block {}
+finally: FINALLY block 
 ;
 
-resourceSpec: '(' resources ')'  {}
+resourceSpec: '(' resources ')'  
 | '(' resources ';' ')'
 ;
 
@@ -447,72 +442,74 @@ resources: resource
 | resources ';' resource
 ;
 
-resource: varModifiers referenceType varDclId '=' exp
+resource: FINAL referenceType varDclId '=' exp
+| annotation referenceType varDclId '=' exp
 ;
 
-switchBlockStmtGroups:     {}
+switchBlockStmtGroups:     
 | switchBlockStmtGroups switchBlockStmtGroup
 ;
 
 switchBlockStmtGroup: switchLabels blockStmts
 ;
 
-switchLabels: switchLabel       {}
+switchLabels: switchLabel       
 | switchLabels switchLabel
 ;
 
-switchLabel: CASE exp ':'    {}
-| CASE enumConstantName ':'  {}
-| DEFAULT ':'                {}
+switchLabel: CASE exp ':'    
+| CASE enumConstantName ':'  
+| DEFAULT ':'                
 ;
 
-enumConstantName: IDT {}
+enumConstantName: IDT 
 ;
 
 forControl: forVarControl
-| forInit ';' ';'           {}
-| forInit ';' exp ';'            {}
-| forInit ';' exp ';' forUpdate  {}
-| forInit ';' ';' forUpdate      {}
+| forInit ';' ';'           
+| forInit ';' exp ';'            
+| forInit ';' exp ';' forUpdate  
+| forInit ';' ';' forUpdate      
 ;
 
-forVarControl: varModifiers javatype varDclId forVarControlRest
+forVarControl: javatype varDclId forVarControlRest
+| modifiers javatype varDclId forVarControlRest
 ;
 
-forVarControlRest: ':' exp  {}
+forVarControlRest: ':' exp  
 | forVarDclsRest ';' ';'
 | forVarDclsRest ';' exp ';'
 | forVarDclsRest ';' exp ';' forUpdate
 | forVarDclsRest ';' ';' forUpdate
 ;
 
-forVarDclsRest:     {}
-| '=' varInitializer  {}
-| ',' varDcls         {}
-| '=' varInitializer ',' varDcls  {}
+forVarDclsRest:     
+| '=' varInitializer  
+| ',' varDcls         
+| '=' varInitializer ',' varDcls  
 ;
 
 forInit: exp
-| forInit ',' exp    {}
+| forInit ',' exp    
 ;
 
 forUpdate: exp
-| forUpdate ',' exp    {}
+| forUpdate ',' exp    
 ;
 
 exp: exp1
 | exp1 assignOp exp1
 ;
 
-assignOp: '='  {}
-| ASSIGN       {}
+assignOp: '='  
+| ASSIGN       
 ;
 
 exp1: exp2
 | exp2 exp1Rest
 ;
 
-exp1Rest: '?' exp ':' exp1  {}
+exp1Rest: '?' exp ':' exp1  
 ;
 
 exp2: exp3
@@ -520,8 +517,11 @@ exp2: exp3
 ;
 
 exp2Rest: INSTANCEOF javatype
-| infixOp exp3
+| infixCat
 ;
+
+infixCat: infixOp exp3
+| infixCat infixOp exp3
 
 infixOp: LOGICOR
 | LOGICAND
@@ -555,7 +555,6 @@ postfixOps:
 ;
 
 exp3: prefixOp exp3
-| '(' exp ')' exp3
 | '(' javatype ')' exp3
 | primary selectors postfixOps
 ;
@@ -566,8 +565,8 @@ primary: literal
 | THIS args
 | SUPER superSuffix
 | NEW creator
-| nonWildcardTypeArgs explicitGenericInvocationSuffix
-| nonWildcardTypeArgs THIS args
+	 /*| nonWildcardTypeArgs explicitGenericInvocationSuffix
+	   | nonWildcardTypeArgs THIS args */
 | idts
 | idts idtSuffix
 | basictype sqBrackets '.' CLASS
@@ -583,7 +582,7 @@ literal: INTEGER
 | NULLSYM
 ;
 
-parExp: '(' exp ')'  {}
+parExp: '(' exp ')'  
 ;
 
 args: '('  ')'
@@ -596,59 +595,61 @@ exps: exp
 
 idts: IDT
 | idts '.' IDT
+| IDT typeargs
 ;
 
 superSuffix: args
-| '.' IDT args  {}
+| '.' IDT args  
 ;
 
-explicitGenericInvocationSuffix: SUPER superSuffix {}
-| IDT args   {}
+/*explicitGenericInvocationSuffix: SUPER superSuffix 
+| IDT args 
 ;
+*/
 
-creator: nonWildcardTypeArgs createName classCreatorRest
-| createName classCreatorRest
+creator: createName classCreatorRest
+/*nonWildcardTypeArgs createName classCreatorRest*/
 | createName arrayCreatorRest
 ;
 
-createName: IDT typeargsordiamond
-| IDT
+createName: IDT
 | createName '.' IDT
-| createName '.' IDT typeargsordiamond
+	    /*| createName '.' IDT typeargsordiamond
+	    IDT typeargsordiamond*/
 ;
 
 classCreatorRest: args
 | args classbody
 ;
 
-arrayCreatorRest: '.'    {}
+arrayCreatorRest: '.'    
 ;
 
 idtSuffix: args
 | '[' sqBrackets '.' CLASS
 | '[' exp ']'
 | '.' CLASS
-| '.' explicitGenericInvocation
+	   //| '.' explicitGenericInvocation
 | '.' THIS
 | '.' SUPER args
-| '.' NEW nonWildcardTypeArgs innerCreator
+	   //| '.' NEW nonWildcardTypeArgs innerCreatora
 | '.' NEW innerCreator
 ;
 
-explicitGenericInvocation: nonWildcardTypeArgs explicitGenericInvocationSuffix
-;
+//explicitGenericInvocation: nonWildcardTypeArgs explicitGenericInvocationSuffix
+//;
 
 innerCreator: IDT classCreatorRest
-| IDT nonWildcardTypeArgsOrDiamond classCreatorRest
+	      //| IDT nonWildcardTypeArgsOrDiamond classCreatorRest
 ;
 
 selector: '.' IDT
 | '.' IDT args
-| '.' explicitGenericInvocation
+	  //| '.' explicitGenericInvocation
 | '.' THIS
 | '.' SUPER superSuffix
 | '.' NEW innerCreator
-| '.' NEW nonWildcardTypeArgs innerCreator
+	  //| '.' NEW nonWildcardTypeArgs innerCreator
 | '[' exp ']'
 ;
 
@@ -671,14 +672,15 @@ enumBodyDcl:
 | ';' classBodyDcls
 ;
 
-annotationtypebody: '{' annotationTypeElementDcls '}'   {}
+annotationtypebody: '{' annotationTypeElementDcls '}'   
 ;
 
 annotationTypeElementDcls:
 | annotationTypeElementDcls annotationTypeElementDcl
 ;
 
-annotationTypeElementDcl: modifiers annotationTypeElementRest
+annotationTypeElementDcl: annotationTypeElementRest
+modifiers annotationTypeElementRest
 ;
 
 annotationTypeElementRest: javatype IDT annotationMethodOrConstantRest ';'
