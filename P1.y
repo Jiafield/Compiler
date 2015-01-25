@@ -413,7 +413,7 @@ stmt: block
 | CONTINUE ';'
 | CONTINUE IDT ';'
 | RETURN ';'
-| RETURN IDT ';'
+| RETURN exp ';'
 | THROW exp ';'
 | SYNCHRONIZED parExp block
 | TRY block catches
@@ -470,10 +470,12 @@ switchLabel: CASE exp ':'
 enumConstantName: IDT 
 ;
 
-forControl: forInit ';' ';'           
+forControl: ';' ';'
+| forInit ';' ';'           
 | forInit ';' exp ';'            
 | forInit ';' exp ';' forUpdate  
 | forInit ';' ';' forUpdate      
+| localVarDcl ':' exp
 ;
 
 forInit: localVarDcl
@@ -626,11 +628,12 @@ arrayCreatorRest: arrayInitializer
 dimExps: '[' ']'
 | '[' exp ']'
 | dimExps '[' exp ']'
+| dimExps '[' ']'
 ;
 
 idtSuffix: args
 | '[' sqBrackets '.' CLASS ']'
-| '[' exp ']'
+| dimExps
 | '.' CLASS
 	   //| '.' explicitGenericInvocation
 | '.' THIS

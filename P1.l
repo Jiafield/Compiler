@@ -18,7 +18,7 @@ EXP ([Ee][-+][0-9]+)
                     BEGIN(INITIAL);}
 <COMMENT>([^*]|\n)+|.
 <COMMENT><<EOF>>   {printf("Line %d: Unterminated comment\n", yylineno); return 0;}
-"//".*\n           {printf("One line comment at line %d\n", yylineno);}
+"//".*\n           {printf("One line comment at line %d\n", yylineno - 1);}
 
  /* Match Keywords */
 "abstract" {printf("KEY\t%s\t\t%d\n", yytext, yylineno); return ABSTRACT;}
@@ -83,7 +83,7 @@ EXP ([Ee][-+][0-9]+)
                    return INTEGER;}
 
  /* Float */
-[0-9]*\.[0-9]+{EXP}?[f|d] |
+[0-9]*\.[0-9]+{EXP}?[f|d]? |
 [0-9]{EXP} {printf("FLT\t%s\t\t%d\n", yytext, yylineno);
             yylval.d = atof(yytext);
             return DOUBLE;}
