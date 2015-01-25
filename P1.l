@@ -95,16 +95,18 @@ EXP ([Ee][-+][0-9]+)
 \"([^"\\]|\\['"?\\abfnrtv]|\\[0-7]{1,3}|\\[Xx][0-9a-fA-F]+])*\" {printf("STR\t%s\t\t%d\n", yytext, yylineno); return STRING;}
 
 
- /* Punctuarions */
+ /* Punctuations */
 "{"|"}"|"["|"]"|"("|")"|"."|";"|"," {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "++"|"--"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return PREPOSTFIX;}
 "+"|"-"|"~"|"!" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "*"|"/"|"%" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "<<"|">>"|">>>"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return SHIFTOP;}
-"=="|"!="|"<="|">=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return CMP;}
+"=="|"!=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return EQUALITY;}
+"<="|">=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return CMP;}
 ">" | "<" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "^"|"&"|"|" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
-"&&"|"||" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return LOGICOP;}
+"&&" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return LOGICAND;}
+"||" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return LOGICOR;}
 "?"|":"|"@" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "+="|"-="|"*="|"/+"|"%="|"&="|"^="|"|="|"<<="|">>="|">>>="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return ASSIGN;}
