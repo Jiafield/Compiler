@@ -499,7 +499,7 @@ forUpdate: exp
 ;
 
 exp: exp1
-| exp1 assignOp exp1
+| exp1 assignOp exp
 ;
 
 assignOp: '='  
