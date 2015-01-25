@@ -625,7 +625,8 @@ classCreatorRest: args
 | args classbody
 ;
 
-arrayCreatorRest: sqBrackets arrayInitializer
+arrayCreatorRest: '[' exp ']'
+| '[' exp ']' arrayInitializer
 ;
 
 idtSuffix: args
