@@ -558,6 +558,7 @@ postfixOps:
 
 exp3: prefixOp exp3
 | '(' javatype ')' exp3
+| '(' exp ')' exp3
 | primary selectors postfixOps
 ;
 
