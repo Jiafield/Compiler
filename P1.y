@@ -263,8 +263,8 @@ fieldDclsRest: varDclRest
 | varDclRest ',' varDcls   
 ;
 
-methodDclRest: formalParameters throwlist block
-| formalParameters throwlist ';'                 
+methodDclRest: formalParameters sqBrackets throwlist block
+| formalParameters sqBrackets throwlist ';'                 
 ;
 
 voidMethodDclRest: formalParameters throwlist block
@@ -340,7 +340,7 @@ formalParameters: '(' ')'
 | '(' formalParameterDcls ')'      
 ;
 
-formalParameterDcls: formalParameterDclsRest
+formalParameterDcls: javatype formalParameterDclsRest
 | modifiers javatype formalParameterDclsRest
 ;
 
