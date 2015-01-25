@@ -154,6 +154,8 @@ void dumpAst(struct ast *a, int level) {
 }
 
 extern int yyparse();
+extern int yydebug;
 int main() {
+  yydebug = 0;
   return yyparse();
 }

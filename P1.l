@@ -103,7 +103,7 @@ EXP ([Ee][-+][0-9]+)
 "<<"|">>"|">>>"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return SHIFTOP;}
 "=="|"!=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return EQUALITY;}
 "<="|">=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return CMP;}
-">" | "<" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
+">"|"<" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "^"|"&"|"|" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "&&" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return LOGICAND;}
 "||" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return LOGICOR;}

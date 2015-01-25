@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "P1.h"
 extern int yylex();
+#define YYDEBUG 1
 %}
 
 %union {
@@ -388,8 +389,11 @@ blockStmt: localVarDclStmt
 | stmt
 ;
 
-localVarDclStmt:  javatype varDcls ';'
-| modifiers javatype varDcls ';'
+localVarDclStmt: localVarDcl ';'
+;
+
+localVarDcl: javatype varDcls
+| modifiers javatype varDcls
 ;
 
 stmt: block
@@ -466,32 +470,16 @@ switchLabel: CASE exp ':'
 enumConstantName: IDT 
 ;
 
-forControl: forVarControl
-| forInit ';' ';'           
+forControl: forInit ';' ';'           
 | forInit ';' exp ';'            
 | forInit ';' exp ';' forUpdate  
 | forInit ';' ';' forUpdate      
 ;
 
-forVarControl: javatype varDclId forVarControlRest
-| modifiers javatype varDclId forVarControlRest
-;
-
-forVarControlRest: ':' exp  
-| forVarDclsRest ';' ';'
-| forVarDclsRest ';' exp ';'
-| forVarDclsRest ';' exp ';' forUpdate
-| forVarDclsRest ';' ';' forUpdate
-;
-
-forVarDclsRest:     
-| '=' varInitializer  
-| ',' varDcls         
-| '=' varInitializer ',' varDcls  
-;
-
-forInit: exp
-| forInit ',' exp    
+forInit: localVarDcl
+| exp
+| forInit ',' exp
+| forInit ',' localVarDcl   
 ;
 
 forUpdate: exp
@@ -598,7 +586,7 @@ exps: exp
 
 idts: IDT
 | idts '.' IDT
-| IDT typeargs
+      //| IDT typeargs
 ;
 
 superSuffix: args
@@ -612,7 +600,7 @@ superSuffix: args
 
 creator: createName classCreatorRest
 /*nonWildcardTypeArgs createName classCreatorRest*/
-| createName arrayCreatorRest
+| arrayName arrayCreatorRest
 ;
 
 createName: IDT
@@ -621,12 +609,23 @@ createName: IDT
 	    IDT typeargsordiamond*/
 ;
 
+arrayName: basictype
+| referenceType
+| IDT
+;
+
 classCreatorRest: args
 | args classbody
 ;
 
-arrayCreatorRest: '[' exp ']'
-| '[' exp ']' arrayInitializer
+arrayCreatorRest: arrayInitializer
+| dimExps
+| dimExps arrayInitializer
+;
+
+dimExps: '[' ']'
+| '[' exp ']'
+| dimExps '[' exp ']'
 ;
 
 idtSuffix: args
@@ -636,7 +635,7 @@ idtSuffix: args
 	   //| '.' explicitGenericInvocation
 | '.' THIS
 | '.' SUPER args
-	   //| '.' NEW nonWildcardTypeArgs innerCreatora
+	   //| '.' NEW nonWildcardTypeArgs innerCreator
 | '.' NEW innerCreator
 ;
 
