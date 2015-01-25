@@ -630,7 +630,7 @@ arrayCreatorRest: '[' exp ']'
 ;
 
 idtSuffix: args
-| '[' sqBrackets '.' CLASS
+| '[' sqBrackets '.' CLASS ']'
 | '[' exp ']'
 | '.' CLASS
 	   //| '.' explicitGenericInvocation
