@@ -39,10 +39,10 @@ extern int yylex();
 %start javafile
 
 %%
-javafile: pkgdcl imports types END      {return 0;}
+javafile: pkgdcl imports types END   {return 0;}
 ;
 
-pkgdcl:                                 
+pkgdcl: 
 | PACKAGE qualifiedidt ';'
 | annotations PACKAGE qualifiedidt ';'  
 ;
@@ -625,7 +625,7 @@ classCreatorRest: args
 | args classbody
 ;
 
-arrayCreatorRest: '.'    
+arrayCreatorRest: sqBrackets arrayInitializer
 ;
 
 idtSuffix: args
