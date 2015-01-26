@@ -473,11 +473,8 @@ switchLabels: switchLabel
 ;
 
 switchLabel: CASE exp ':'    
-| CASE enumConstantName ':'  
+| CASE IDT ':'  
 | DEFAULT ':'                
-;
-
-enumConstantName: IDT 
 ;
 
 forControl: ';' ';'
@@ -671,9 +668,12 @@ selectors:
 | selectors selector
 ;
 
-enumBody: '{' enumConstants enumBodyDcl '}'
+enumBody: '{' idts '}'
+| '{' idts ';' '}'
+|  '{' idts ';' classBodyDcls '}'
 ;
 
+/*
 enumConstants:
 | enumConstants ',' enumConstant
 ;
@@ -681,10 +681,12 @@ enumConstants:
 enumConstant: IDT
 ;
 
+
 enumBodyDcl: 
 | ';'
 | ';' classBodyDcls
 ;
+*/
 
 annotationtypebody: '{' annotationTypeElementDcls '}'   
 ;
