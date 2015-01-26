@@ -116,12 +116,12 @@ typeparameter: IDT
 | IDT EXTENDS bound   
 ;
 
-typelist: referenceType
-| typelist ',' referenceType
+typelist: idts
+| typelist ',' idts
 ;
 
-bound: referenceType
-| referenceType '&' bound
+bound: idts
+| idts '&' bound
 ;
 
 interfaceDcl: normalinterfaceDcl
@@ -188,8 +188,10 @@ elementValues: elementValue
 | elementValues ',' elementValue   
 ;
 
-javatype: basictype sqBrackets
-| referenceType sqBrackets
+javatype: basictype
+| idts
+| basictype dimExps
+| idts dimExps
 ;
 
 basictype: BYTE       
@@ -202,9 +204,9 @@ basictype: BYTE
 | BOOLEAN        
 ;
 
-referenceType: idts
+/*referenceType: idts
 | referenceType '.' idts
-;
+;*/
 
 typeargs: '<' typearglist '>'   
 ;
@@ -213,10 +215,10 @@ typearglist: typearg
 | typearglist ',' typearg
 ;
 
-typearg: referenceType       
+typearg: idts       
 | '?'                        
-| '?' EXTENDS referenceType  
-| '?' SUPER referenceType    
+| '?' EXTENDS idts  
+| '?' SUPER idts    
 ;
 
 /*
@@ -341,6 +343,10 @@ sqBrackets:
 | sqBrackets '[' ']'  
 ;
 
+mustSqBrackets: '[' ']'
+| mustSqBrackets '[' ']'
+;
+
 formalParameters: '(' ')'  
 | '(' formalParameterDcls ')'      
 ;
@@ -451,8 +457,8 @@ resources: resource
 | resources ';' resource
 ;
 
-resource:  referenceType varDclId '=' exp
-| modifiers referenceType varDclId '=' exp
+resource:  idts varDclId '=' exp
+| modifiers idts varDclId '=' exp
 ;
 
 switchBlockStmtGroups:     
@@ -564,9 +570,9 @@ primary: literal
 | NEW creator
 	 /*| nonWildcardTypeArgs explicitGenericInvocationSuffix
 	   | nonWildcardTypeArgs THIS args */
-| idts
+| javatype
 | idts idtSuffix
-| basictype sqBrackets '.' CLASS
+| basictype '.' CLASS
 | VOID '.' CLASS
 ;
 
@@ -606,28 +612,25 @@ superSuffix: args
 
 creator: idts classCreatorRest
 /*nonWildcardTypeArgs createName classCreatorRest*/
-| arrayName arrayCreatorRest
+| javatype arrayCreatorRest
 ;
 
 /*
 createName: IDT
 | createName '.' IDT
-	    | createName '.' IDT typeargsordiamond
-	    IDT typeargsordiamond
-;
-*/
+	    //	    | createName '.' IDT typeargsordiamond
+	    //IDT typeargsordiamond
+	    ;
 
-arrayName: basictype
-| idts
-;
+arrayName: javatype
+;*/
 
 classCreatorRest: args
 | args classbody
 ;
 
 arrayCreatorRest: arrayInitializer
-| dimExps
-| dimExps arrayInitializer
+|
 ;
 
 dimExps: '[' ']'
@@ -637,9 +640,8 @@ dimExps: '[' ']'
 ;
 
 idtSuffix: args
-| '[' sqBrackets '.' CLASS ']'
-| dimExps
-| dimExps IDT
+	   //| '[' sqBrackets '.' CLASS ']'
+	   //| dimExps IDT
 | '.' CLASS
 	   //| '.' explicitGenericInvocation
 | '.' THIS
