@@ -287,7 +287,11 @@ throwlist:
 | THROWS qualifiedidtlist    
 ;
 
-interfacebody: '{' interfaceBodyDcl '}' 
+interfacebody: '{' interfaceBodyDcls '}'
+;
+
+interfaceBodyDcls: interfaceBodyDcl
+| interfaceBodyDcls interfaceBodyDcl
 ;
 
 interfaceBodyDcl: ';'
@@ -600,20 +604,21 @@ superSuffix: args
 ;
 */
 
-creator: createName classCreatorRest
+creator: idts classCreatorRest
 /*nonWildcardTypeArgs createName classCreatorRest*/
 | arrayName arrayCreatorRest
 ;
 
+/*
 createName: IDT
 | createName '.' IDT
-	    /*| createName '.' IDT typeargsordiamond
-	    IDT typeargsordiamond*/
+	    | createName '.' IDT typeargsordiamond
+	    IDT typeargsordiamond
 ;
+*/
 
 arrayName: basictype
-| referenceType
-| IDT
+| idts
 ;
 
 classCreatorRest: args
@@ -634,6 +639,7 @@ dimExps: '[' ']'
 idtSuffix: args
 | '[' sqBrackets '.' CLASS ']'
 | dimExps
+| dimExps IDT
 | '.' CLASS
 	   //| '.' explicitGenericInvocation
 | '.' THIS
