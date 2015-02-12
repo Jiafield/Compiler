@@ -1,50 +1,32 @@
-struct symbol {
-  char *name;
-};
+#ifndef SYNTAX_TREE
+#define SYNTAX_TREE
 
-#define TABLE_SIZE 7919
-struct symbol symtab[TABLE_SIZE];
 
-struct symbol *lookup(char *);
+typedef enum {ROOT, TYPES, TYPEDCL} RULE_TYPE;
 
-struct ast {
-  int type;
-  struct ast *l;
-  struct ast *r;
-};
+typedef struct node {
+  RULE_TYPE type;
+  char *symbol;
+  struct node *sibling;
+  struct node *children;
+  struct node *lastChildren;
+} Node;
 
-struct intval {
-  int type;  // Type is 'I'
-  int val;
-};
+typedef struct root {
+  RULE_TYPE type;
+  Node *pkg;
+  Node *imp;
+  Node *types;
+} Root;
 
-struct fltval {
-  int type;  // Type is 'F'
-  double val;
-};
+Node *newRoot(Node *pkg, Node *imp, Node *types);
 
-struct assign {
-  int type;  // Type is '='
-  struct ast *lval;
-  struct ast *rval;
-};
+Node *newNode(RULE_TYPE t, char *s, Node *sib, Node *lastSib, Node *c);
 
-struct symref {
-  int type;  // Type is 'S'
-  struct symbol *s;
-};
+void addChild(RULE_TYPE t, Node *p, Node *c);
 
-struct flow {
-  int type;
-  struct ast *doList;
-  struct ast *elseList;
-};
-
-struct ast *newAst(int t, struct ast *l, struct ast *r);
-struct ast *newInt(int num);
-struct ast *newFlt(double num);
-struct ast *newRef(struct symbol *s);
-struct ast *newAssign(struct ast *l, struct ast *r);
 
 void yyerror(const char *s, ...);
-void dumpAst(struct ast *a, int level);
+void dumpTree(Node *a, int level);
+
+#endif

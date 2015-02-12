@@ -2,12 +2,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "P1.h"
-extern int yylex();
+#include "P1Symbol.h"
+
 #define YYDEBUG 1
+extern int yylex();
 %}
 
 %union {
-  struct ast *a;
+  Node *a;
   long i;
   double d;
   char operator[4];
@@ -19,6 +21,8 @@ extern int yylex();
 %token <s> IDT
 
 %token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM
+
+%type<a> javafile pkgdcl imports types typedcl
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -40,16 +44,16 @@ extern int yylex();
 %start javafile
 
 %%
-javafile: pkgdcl imports types END   {return 0;}
+javafile: pkgdcl imports types END   {$$ = newRoot($1, $2, $3); return 0;}
 ;
 
-pkgdcl: 
-| PACKAGE qualifiedidt ';'
-| annotations PACKAGE qualifiedidt ';'  
+pkgdcl:                                 {}
+| PACKAGE qualifiedidt ';'              {}
+| annotations PACKAGE qualifiedidt ';'  {}
 ;
 
-imports:
-| imports importdcl
+imports:             {}
+| imports importdcl  {}
 ;
 
 importdcl: IMPORT STATIC importpath ';'    
@@ -60,11 +64,11 @@ importpath: qualifiedidt '.' '*'
 | qualifiedidt
 ;
 
-types:
-| types typedcl
+types:          {$$ = newNode(TYPES, NULL, NULL, NULL, NULL);}
+| types typedcl {$$ = $1; addChild(TYPEDCL, $$, $2);}
 ;
 
-typedcl: classOrInterfaceDcl
+typedcl: classOrInterfaceDcl  {}
 ;
 
 classOrInterfaceDcl: classDcl
@@ -204,35 +208,6 @@ basictype: BYTE
 | BOOLEAN        
 ;
 
-/*referenceType: idts
-| referenceType '.' idts
-;*/
-
-typeargs: '<' typearglist '>'   
-;
-
-typearglist: typearg
-| typearglist ',' typearg
-;
-
-typearg: idts       
-| '?'                        
-| '?' EXTENDS idts  
-| '?' SUPER idts    
-;
-
-/*
-nonWildcardTypeArgs: '<' typelist '>'  
-;
-
-typeargsordiamond: '<' '>'   
-| typeargs
-;
-
-nonWildcardTypeArgsOrDiamond: '<' '>'   
-| nonWildcardTypeArgs
-;
-*/
 classbody: '{' classBodyDcls '}'    
 ;
 
@@ -341,10 +316,6 @@ interfaceGenericMethodDcl: typeParameters javatype IDT interfaceMethodDclRest
 
 sqBrackets:           
 | sqBrackets '[' ']'  
-;
-
-mustSqBrackets: '[' ']'
-| mustSqBrackets '[' ']'
 ;
 
 formalParameters: '(' ')'  
@@ -565,8 +536,6 @@ primary: literal
 | THIS args
 | SUPER superSuffix
 | NEW creator
-	 /*| nonWildcardTypeArgs explicitGenericInvocationSuffix
-	   | nonWildcardTypeArgs THIS args */
 | javatype
 | idts idtSuffix
 | basictype '.' CLASS
@@ -595,32 +564,15 @@ exps: exp
 
 idts: IDT
 | idts '.' IDT
-      //| IDT typeargs
 ;
 
 superSuffix: args
 | '.' IDT args  
 ;
 
-/*explicitGenericInvocationSuffix: SUPER superSuffix 
-| IDT args 
-;
-*/
-
 creator: idts classCreatorRest
-/*nonWildcardTypeArgs createName classCreatorRest*/
 | javatype arrayCreatorRest
 ;
-
-/*
-createName: IDT
-| createName '.' IDT
-	    //	    | createName '.' IDT typeargsordiamond
-	    //IDT typeargsordiamond
-	    ;
-
-arrayName: javatype
-;*/
 
 classCreatorRest: args
 | args classbody
@@ -637,30 +589,20 @@ dimExps: '[' ']'
 ;
 
 idtSuffix: args
-	   //| '[' sqBrackets '.' CLASS ']'
-	   //| dimExps IDT
 | '.' CLASS
-	   //| '.' explicitGenericInvocation
 | '.' THIS
 | '.' SUPER args
-	   //| '.' NEW nonWildcardTypeArgs innerCreator
 | '.' NEW innerCreator
 ;
 
-//explicitGenericInvocation: nonWildcardTypeArgs explicitGenericInvocationSuffix
-//;
-
 innerCreator: IDT classCreatorRest
-	      //| IDT nonWildcardTypeArgsOrDiamond classCreatorRest
 ;
 
 selector: '.' IDT
 | '.' IDT args
-	  //| '.' explicitGenericInvocation
 | '.' THIS
 | '.' SUPER superSuffix
 | '.' NEW innerCreator
-	  //| '.' NEW nonWildcardTypeArgs innerCreator
 | '[' exp ']'
 ;
 
@@ -672,21 +614,6 @@ enumBody: '{' idts '}'
 | '{' idts ';' '}'
 |  '{' idts ';' classBodyDcls '}'
 ;
-
-/*
-enumConstants:
-| enumConstants ',' enumConstant
-;
-
-enumConstant: IDT
-;
-
-
-enumBodyDcl: 
-| ';'
-| ';' classBodyDcls
-;
-*/
 
 annotationtypebody: '{' annotationTypeElementDcls '}'   
 ;

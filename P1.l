@@ -7,6 +7,7 @@ EXP ([Ee][-+][0-9]+)
 
 %{
 #include "P1.h"
+#include "P1Symbol.h"
 #include "P1.tab.h"
 %}
 
@@ -114,7 +115,7 @@ EXP ([Ee][-+][0-9]+)
 
  /* Identifier */
 [a-zA-Z_$][a-zA-Z0-9_$]*    {printf("IDT\t%s\t\t%d\n", yytext, yylineno); 
-                             yylval.s = lookup(yytext); return IDT;}
+                             return IDT;}
 
 
  /* Whitespace */
