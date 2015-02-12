@@ -1,5 +1,5 @@
-P1: P1.tab.o lex.yy.o P1funcs.o
-	gcc -g -Wall -o P1 P1.tab.o lex.yy.o P1funcs.o
+P1: P1.tab.o lex.yy.o P1funcs.o P1Symbol.o
+	gcc -g -Wall -o P1 P1.tab.o lex.yy.o P1funcs.o P1Symbol.o
 
 P1.tab.o: P1.y
 	bison -dv P1.y
@@ -8,6 +8,9 @@ P1.tab.o: P1.y
 lex.yy.o: P1.l
 	flex P1.l
 	gcc -g -Wall -c lex.yy.c
+
+P1Symbol.o: P1Symbol.c
+	gcc -g -Wall -c P1Symbol.c
 
 P1funcs.o: P1funcs.c
 	gcc -g -Wall -c P1funcs.c
