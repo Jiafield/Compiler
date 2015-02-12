@@ -9,6 +9,8 @@ EXP ([Ee][-+][0-9]+)
 #include "P1.h"
 #include "P1Symbol.h"
 #include "P1.tab.h"
+
+struct symbol symtab[TABLE_SIZE];
 %}
 
 %%
@@ -115,7 +117,7 @@ EXP ([Ee][-+][0-9]+)
 
  /* Identifier */
 [a-zA-Z_$][a-zA-Z0-9_$]*    {printf("IDT\t%s\t\t%d\n", yytext, yylineno); 
-                             return IDT;}
+                            yylval.s = lookup(yytext, symtab); return IDT;}
 
 
  /* Whitespace */

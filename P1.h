@@ -21,9 +21,9 @@ typedef struct root {
 
 Node *newRoot(Node *pkg, Node *imp, Node *types);
 
-Node *newNode(RULE_TYPE t, char *s, Node *sib, Node *lastSib, Node *c);
+Node *newNode(RULE_TYPE t, char *s, int cNum, ...);
 
-void addChild(RULE_TYPE t, Node *p, Node *c);
+void addChild(Node *p, Node *c);
 
 
 void yyerror(const char *s, ...);

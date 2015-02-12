@@ -64,8 +64,8 @@ importpath: qualifiedidt '.' '*'
 | qualifiedidt
 ;
 
-types:          {$$ = newNode(TYPES, NULL, NULL, NULL, NULL);}
-| types typedcl {$$ = $1; addChild(TYPEDCL, $$, $2);}
+types:          {$$ = newNode(TYPES, NULL, 0);}
+| types typedcl {$$ = $1; addChild($$, $2);}
 ;
 
 typedcl: classOrInterfaceDcl  {}
