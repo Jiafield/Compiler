@@ -1,8 +1,16 @@
-#ifndef SYNTAX_TREE
-#define SYNTAX_TREE
+#ifndef SYNTAXTREE
+#define SYNTAXTREE
 
+typedef enum {
+#define PROCESS(x) x,
+#include "P1enums.h"
+#undef PROCESS
+  TERMINAL,
+  RULESEND,
+} RULE_TYPE;
 
-typedef enum {ROOT, TYPES, TYPEDCL} RULE_TYPE;
+char *TypeToName[RULESEND];
+void addEnum(RULE_TYPE x);
 
 typedef struct node {
   RULE_TYPE type;

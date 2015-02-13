@@ -5,6 +5,12 @@
 #include "P1.h"
 #include "P1Symbol.h"
 
+void addEnums() {
+#define PROCESS(x) TypeToName[x] = #x;
+#include "P1enums.h"
+#undef PROCESS  
+}
+
 Node *newRoot(Node *pkg, Node *imp, Node *types) {
   Root *r = (Root *)malloc(sizeof(Root));
   r->type = ROOT;
@@ -51,9 +57,28 @@ void yyerror(const char *s, ...) {
 }
 
 void dumpTree(Node *r, int level) {
-
+  addEnums();
+  printf("%*s", level, "");
+  level++;
+  if (r->type == ROOT) {
+    Root *root = (Root *)r;
+    printf("%s\n", TypeToName[root->type]);
+    dumpTree(root->pkg, level);
+    dumpTree(root->imp, level);
+    dumpTree(root->types, level);
+  } else {
+    if (r->type != TERMINAL) {
+      printf("%s\n", TypeToName[r->type]);
+      Node *ptr = r->children;
+      while (ptr) {
+	dumpTree(ptr, level);
+	ptr = ptr->sibling;
+      }
+    } else {
+      printf("%s\n", r->symbol);
+    }
+  }
 }
-
 
 extern int yyparse();
 extern int yydebug;
@@ -61,3 +86,4 @@ int main() {
   yydebug = 0;
   return yyparse();
 }
+

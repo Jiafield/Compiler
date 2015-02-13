@@ -44,7 +44,7 @@ extern int yylex();
 %start javafile
 
 %%
-javafile: pkgdcl imports types END   {$$ = newRoot($1, $2, $3); return 0;}
+javafile: pkgdcl imports types END   {$$ = newRoot($1, $2, $3); dumpTree($$, 0); return 0;}
 ;
 
 pkgdcl:                                 {}
