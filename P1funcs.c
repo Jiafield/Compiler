@@ -46,7 +46,6 @@ Node *newLeaf(char *s) {
 }
 
 void addChild(Node *p, Node *c) {
-  printf("Add children\n");
   if (!(p->children)) {
     p->children = c;
   } else {
@@ -82,7 +81,7 @@ void dump(Node *r, int level) {
   if (!r)
     return;
 
-  printf("%*s", level, "");
+  printf("%*s", level * 2, "");
   level++;
 
   if (r->type != TERMINAL) {
@@ -102,6 +101,8 @@ extern int yyparse();
 extern int yydebug;
 int main() {
   yydebug = 0;
-  return yyparse();
+  Node *r1 = yyparse();
+  dumpTree(r1);
+  return 0;
 }
 

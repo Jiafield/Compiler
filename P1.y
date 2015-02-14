@@ -23,7 +23,7 @@ extern int yylex();
 
 %token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM
 
-%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody typeParameters javatype typelist
+%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody classBodyDcls classBodyDcl typeParameters javatype typelist modifier annotation memberDcl block methodOrFieldDcl voidMethodDclRest constructorDclRest genericMethodOrConstructorDcl methodOrFieldRest basictype idts dimExps
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -45,10 +45,10 @@ extern int yylex();
 %start javafile
 
 %%
-javafile: pkgdcl imports types END   {$$ = newRoot($1, $2, $3); dumpTree($$); return 0;}
+javafile: pkgdcl imports types END   {$$ = newRoot($1, $2, $3); return $$;}
 ;
 
-pkgdcl:                                 {$$ = NULL;}
+pkgdcl:                                 {$$ = newNode(PACKAGE0, 0);}
 | PACKAGE qualifiedidt ';'              {Node *t = newLeaf("package");
                                          $$ = newNode(PACKAGE1, 2, t, $2);}
 | annotations PACKAGE qualifiedidt ';'  {}
@@ -67,7 +67,7 @@ importdcl: IMPORT STATIC importpath ';'   {Node *t1 = newLeaf("import");
 
 importpath: qualifiedidt '.' '*'     {Node *t = newLeaf("*"); 
    $$ = newNode(IMPORTPATH1, 2, $1, t);}
-| qualifiedidt                       {$$ = NULL;}
+| qualifiedidt                       {$$ = newNode(IMPORTPATH2, 1, $1);}
 ;
 
 types:          {$$ = newNode(TYPES, 0);}
@@ -151,22 +151,22 @@ qualifiedidtlist: qualifiedidt
 | qualifiedidtlist ',' qualifiedidt   
 ;
 
-modifiers: modifier    {}
-| modifiers modifier   {}
+modifiers: modifier    {$$ = newNode(MODIFIERS, 1, $1);}
+| modifiers modifier   {$$ = $1; addChild($$, $2); }
 ;
 
-modifier: PUBLIC 
-| PRIVATE        
-| PROTECTED      
-| STATIC         
-| ABSTRACT       
-| FINAL          
-| NATIVE         
-| SYNCHRONIZED   
-| TRANSIENT      
-| VOLATILE       
-| STRICTFP       
-| annotation
+modifier: PUBLIC   {$$ = newLeaf("public");}
+| PRIVATE          {$$ = newLeaf("private");}
+| PROTECTED        {$$ = newLeaf("protected");}
+| STATIC           {$$ = newLeaf("static");}
+| ABSTRACT         {$$ = newLeaf("abstract");}
+| FINAL            {$$ = newLeaf("final");}
+| NATIVE           {$$ = newLeaf("native");}
+| SYNCHRONIZED     {$$ = newLeaf("synchronized");}
+| TRANSIENT        {$$ = newLeaf("transient");}
+| VOLATILE         {$$ = newLeaf("volatile");}
+| STRICTFP         {$$ = newLeaf("strictfp");}
+| annotation       {$$ = newNode(MODIFIERANNO, 1, $1);}
 ;
 
 annotations: annotation
@@ -203,49 +203,55 @@ elementValues: elementValue
 | elementValues ',' elementValue   
 ;
 
-javatype: basictype
-| idts
-| basictype dimExps
-| idts dimExps
+javatype: basictype    {$$ = newNode(JAVATYPE1, 1, $1);}
+| idts                 {$$ = newNode(JAVATYPE2, 1, $1);}
+| basictype dimExps    {$$ = newNode(JAVATYPE3, 2, $1, $2);}
+| idts dimExps         {$$ = newNode(JAVATYPE4, 2, $1, $2);}
 ;
 
-basictype: BYTE       
-| CHAR           
-| FLOAT          
-| DOUBLETYPE     
-| INT            
-| LONG           
-| SHORT          
-| BOOLEAN        
+basictype: BYTE       {$$ = newLeaf("byte");}
+| CHAR                {$$ = newLeaf("char");}
+| FLOAT               {$$ = newLeaf("float");}
+| DOUBLETYPE          {$$ = newLeaf("double");}
+| INT                 {$$ = newLeaf("int");}
+| LONG                {$$ = newLeaf("long");}
+| SHORT               {$$ = newLeaf("short");}
+| BOOLEAN             {$$ = newLeaf("boolean");}
 ;
 
-classbody: '{' classBodyDcls '}'    {}
+classbody: '{' classBodyDcls '}'    { $$ = $2; }
 ;
 
-classBodyDcls:                     
-| classBodyDcls classBodyDcl
+classBodyDcls:                     { $$ = newNode(CLASSBODYDCLS, 0);}
+| classBodyDcls classBodyDcl       { $$ = $1; addChild($$, $2); }
 ;
 
-classBodyDcl: ';' 
-| memberDcl        
-| modifiers memberDcl
-| block
-| STATIC block            
+classBodyDcl: ';'   { $$ = newNode(CLASSBODY0, 0); }
+| memberDcl         { $$ = newNode(CLASSBODY1, 1, $1); }
+| modifiers memberDcl  { $$ = newNode(CLASSBODY2, 2, $1, $2); }
+| block             { $$ = newNode(CLASSBODY3, 1, $1); }
+| STATIC block      { Node *t = newLeaf("static");
+   $$ = newNode(CLASSBODY4, 2, t, $2); }
 ;
 
-memberDcl: methodOrFieldDcl
-| VOID IDT voidMethodDclRest   
-| IDT constructorDclRest       
-| genericMethodOrConstructorDcl
-| classDcl
-| interfaceDcl
+memberDcl: methodOrFieldDcl       { $$ = newNode(MEMBERDCL1, 1, $1);}
+| VOID IDT voidMethodDclRest      { Node *t1 = newLeaf("void");
+   Node *t2 = newLeaf($2->name);
+   $$ = newNode(MEMBERDCL2, 3, t1, t2, $3);}
+| IDT constructorDclRest          { Node *t = newLeaf($1->name); 
+   $$ = newNode(MEMBERDCL3, 2, t, $2);}
+| genericMethodOrConstructorDcl   { $$ = newNode(MEMBERDCL4, 1, $1);}
+| classDcl                        { $$ = newNode(MEMBERDCL5, 1, $1);}
+| interfaceDcl                    { $$ = newNode(MEMBERDCL6, 1, $1);}
 ;
 
-methodOrFieldDcl: javatype IDT methodOrFieldRest
+methodOrFieldDcl: javatype IDT methodOrFieldRest 
+{ Node *t = newLeaf($2->name);
+  $$ = newNode(METHODORFIELD, 3, $1, t, $3);}
 ;
 
-methodOrFieldRest: fieldDclsRest ';'   
-| methodDclRest
+methodOrFieldRest: fieldDclsRest ';'   {$$ = newNode(TEMP, 0);}
+| methodDclRest                        {$$ = newNode(TEMP, 0);}
 ;
 
 fieldDclsRest: varDclRest
@@ -256,14 +262,14 @@ methodDclRest: formalParameters sqBrackets throwlist block
 | formalParameters sqBrackets throwlist ';'                 
 ;
 
-voidMethodDclRest: formalParameters throwlist block
-| formalParameters throwlist ';'                            
+voidMethodDclRest: formalParameters throwlist block  {$$ = newNode(TEMP, 0);}
+| formalParameters throwlist ';'                     {$$ = newNode(TEMP, 0);}       
 ;
 
-constructorDclRest: formalParameters throwlist block
+constructorDclRest: formalParameters throwlist block  {$$ = newNode(TEMP, 0);} 
 ;
 
-genericMethodOrConstructorDcl: typeParameters genericMethodOrConstructorRest
+genericMethodOrConstructorDcl: typeParameters genericMethodOrConstructorRest    {$$ = newNode(TEMP, 0);}
 ;
 
 genericMethodOrConstructorRest: javatype IDT methodDclRest  
@@ -369,7 +375,7 @@ arrayInitializer: '{' '}'
 | '{' varInitializers ',' '}'  
 ;
 
-block: '{' blockStmts '}'   
+block: '{' blockStmts '}'   {$$ = newNode(TEMP, 0);}
 ;
 
 blockStmts:                
@@ -573,8 +579,9 @@ exps: exp
 | exps ',' exp
 ;
 
-idts: IDT
-| idts '.' IDT
+idts: IDT         {Node *t = newLeaf($1->name);
+  $$ = newNode(IDTS, 1, t);}
+| idts '.' IDT    {$$ = $1; Node *t = newLeaf($3->name); addChild($$, t);}
 ;
 
 superSuffix: args
@@ -593,10 +600,10 @@ arrayCreatorRest: arrayInitializer
 |
 ;
 
-dimExps: '[' ']'
-| '[' exp ']'
-| dimExps '[' exp ']'
-| dimExps '[' ']'
+dimExps: '[' ']'        {$$ = newNode(TEMP, 0);}
+| '[' exp ']'           {$$ = newNode(TEMP, 0);}
+| dimExps '[' exp ']'   {$$ = newNode(TEMP, 0);}
+| dimExps '[' ']'       {$$ = newNode(TEMP, 0);}
 ;
 
 idtSuffix: args
