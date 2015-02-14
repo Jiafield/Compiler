@@ -23,7 +23,7 @@ extern int yylex();
 
 %token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM
 
-%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath
+%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody typeParameters javatype typelist
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -49,45 +49,46 @@ javafile: pkgdcl imports types END   {$$ = newRoot($1, $2, $3); dumpTree($$); re
 ;
 
 pkgdcl:                                 {$$ = NULL;}
-| PACKAGE qualifiedidt ';'              {Node *t = newNode(TERMINAL, "package", 0);
-                                         $$ = newNode(PACKAGE1, NULL, 2, t, $2);}
+| PACKAGE qualifiedidt ';'              {Node *t = newLeaf("package");
+                                         $$ = newNode(PACKAGE1, 2, t, $2);}
 | annotations PACKAGE qualifiedidt ';'  {}
 ;
 
-imports:             {$$ = newNode(IMPORTS, NULL, 0);}
+imports:             {$$ = newNode(IMPORTS, 0);}
 | imports importdcl  {$$ = $1; addChild($$, $2);}
 ;
 
-importdcl: IMPORT STATIC importpath ';'   {Node *t1 = newNode(TERMINAL, "import", 0);
-                                           Node *t2 = newNode(TERMINAL, "static", 0);
-                                           $$ = newNode(IMPORTDCL1, NULL, 3, t1, t2, $3);} 
-| IMPORT importpath ';'                   {Node *t1 = newNode(TERMINAL, "import", 0);
-                                           $$ = newNode(IMPORTDCL2, NULL, 2, t1, $2);}
+importdcl: IMPORT STATIC importpath ';'   {Node *t1 = newLeaf("import");
+                                           Node *t2 = newLeaf("static");
+                                           $$ = newNode(IMPORTDCL1,  3, t1, t2, $3);} 
+| IMPORT importpath ';'                   {Node *t1 = newLeaf("import");
+                                           $$ = newNode(IMPORTDCL2,  2, t1, $2);}
 ;
 
-importpath: qualifiedidt '.' '*'     {Node *t = newNode(TERMINAL, "*", 0); 
-   $$ = newNode(IMPORTPATH1, NULL, 2, $1, t);}
+importpath: qualifiedidt '.' '*'     {Node *t = newLeaf("*"); 
+   $$ = newNode(IMPORTPATH1, 2, $1, t);}
 | qualifiedidt                       {$$ = NULL;}
 ;
 
-types:          {$$ = newNode(TYPES, NULL, 0);}
+types:          {$$ = newNode(TYPES, 0);}
 | types typedcl {$$ = $1; addChild($$, $2);}
 ;
 
-typedcl: classOrInterfaceDcl  {}
+typedcl: classDcl         {$$ = newNode(TYPEDCL1, 1, $1);}
+| interfaceDcl            {$$ = newNode(TYPEDCL2, 1, $1);}
+| modifiers classDcl      {$$ = newNode(TYPEDCL3, 2, $1, $2);}
+| modifiers interfaceDcl  {$$ = newNode(TYPEDCL4, 2, $1, $2);}
 ;
 
-classOrInterfaceDcl: classDcl
-| interfaceDcl
-| modifiers classDcl
-| modifiers interfaceDcl
+classDcl: normalclassDcl  {$$ = newNode(CLASSDCL1, 1, $1);}
+| enumdcl                 {$$ = newNode(CLASSDCL2, 1, $1);}
 ;
 
-classDcl: normalclassDcl
-| enumdcl
-;
-
-normalclassDcl: CLASS IDT typeParametersList extendslist implementslist classbody
+normalclassDcl: CLASS IDT typeParametersList extendslist implementslist classbody 
+{ Node *t1 = newLeaf("class");
+  Node *t2 = newLeaf($2->name);
+  $$ = newNode(NORMALCLASSDCL, 6, t1, t2, $3, $4, $5, $6); 
+}
 ;
 
 enumdcl: ENUM IDT implementslist enumBody  
@@ -99,20 +100,22 @@ normalinterfaceDcl: INTERFACE IDT typeParametersList extendstypelist interfacebo
 annotationtypedcl: '@' INTERFACE IDT annotationtypebody 
 ;
 
-typeParametersList:   
-| typeParameters      
+typeParametersList:   {$$ = newNode(NoParam, 0);}
+| typeParameters      {$$ = newNode(TYPEPARAMETERS, 0);}
 ;
 
-extendslist:          
-| EXTENDS javatype    
+extendslist:          {$$ = newNode(NoExtend, 0);}
+| EXTENDS javatype    {Node *t = newLeaf("extends");
+   $$ = newNode(EXTENDSLIST, 1, t, $2);}
 ;
 
 extendstypelist:     
 | EXTENDS typelist   
 ;
 
-implementslist:         
-| IMPLEMENTS typelist   
+implementslist:         {$$ = newNode(NoImplements, 0);}
+| IMPLEMENTS typelist   {Node *t = newLeaf("implements");
+   $$ = newNode(IMPLEMENTSLIST, 1, t, $2);}
 ;
 
 typeParameters: '<' parameterlist '>'
@@ -138,9 +141,9 @@ interfaceDcl: normalinterfaceDcl
 | annotationtypedcl
 ;
 
-qualifiedidt: IDT        { Node *t = newNode(TERMINAL, $1->name, 0);
-   $$ = newNode(QUALIFIEDIDT, NULL, 1, t);}
-| qualifiedidt '.' IDT   { Node *t = newNode(TERMINAL, $3->name, 0);
+qualifiedidt: IDT        { Node *t = newLeaf($1->name);
+   $$ = newNode(QUALIFIEDIDT, 1, t);}
+| qualifiedidt '.' IDT   { Node *t = newLeaf($3->name);
    $$ = $1; addChild($$, t);}  
 ;
 
@@ -148,8 +151,8 @@ qualifiedidtlist: qualifiedidt
 | qualifiedidtlist ',' qualifiedidt   
 ;
 
-modifiers: modifier    
-| modifiers modifier
+modifiers: modifier    {}
+| modifiers modifier   {}
 ;
 
 modifier: PUBLIC 
@@ -216,7 +219,7 @@ basictype: BYTE
 | BOOLEAN        
 ;
 
-classbody: '{' classBodyDcls '}'    
+classbody: '{' classBodyDcls '}'    {}
 ;
 
 classBodyDcls:                     
@@ -374,7 +377,7 @@ blockStmts:
 ;
 
 blockStmt: localVarDclStmt
-| classOrInterfaceDcl
+| typedcl
 | stmt
 ;
 

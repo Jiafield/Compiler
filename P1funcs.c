@@ -20,13 +20,13 @@ Node *newRoot(Node *pkg, Node *imp, Node *types) {
   return (Node *)r;
 }
 
-Node *newNode(RULE_TYPE t, char *s, int cNum, ...) {
+Node *newNode(RULE_TYPE t, int cNum, ...) {
   Node *n = (Node *)malloc(sizeof(Node));
   va_list ap;
   int i;
 
   n->type = t;
-  n->symbol = s;
+  n->sibling = NULL;
   n->children = NULL;
   // Add children
   va_start(ap, cNum);
@@ -37,8 +37,17 @@ Node *newNode(RULE_TYPE t, char *s, int cNum, ...) {
   return n;
 }
 
+Node *newLeaf(char *s) {
+  Leaf *n = (Leaf *)malloc(sizeof(Leaf));
+  n->type = TERMINAL;
+  n->sibling = NULL;
+  n->symbol = s;
+  return (Node *)n;
+}
+
 void addChild(Node *p, Node *c) {
-  if (!p->children) {
+  printf("Add children\n");
+  if (!(p->children)) {
     p->children = c;
   } else {
     p->lastChildren->sibling = c;
@@ -84,7 +93,8 @@ void dump(Node *r, int level) {
       ptr = ptr->sibling;
     }
   } else {
-    printf("%s\n", r->symbol);
+    Leaf *n = (Leaf *)r;
+    printf("%s\n", n->symbol);
   }
 }
 

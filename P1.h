@@ -14,11 +14,16 @@ void addEnum(RULE_TYPE x);
 
 typedef struct node {
   RULE_TYPE type;
-  char *symbol;
   struct node *sibling;
   struct node *children;
   struct node *lastChildren;
 } Node;
+
+typedef struct leaf {
+  RULE_TYPE type;
+  struct node *sibling;
+  char *symbol;
+} Leaf;
 
 typedef struct root {
   RULE_TYPE type;
@@ -29,8 +34,9 @@ typedef struct root {
 
 Node *newRoot(Node *pkg, Node *imp, Node *types);
 
-Node *newNode(RULE_TYPE t, char *s, int cNum, ...);
+Node *newNode(RULE_TYPE t, int cNum, ...);
 
+Node *newLeaf(char *s);
 void addChild(Node *p, Node *c);
 
 
