@@ -97,12 +97,38 @@ void dump(Node *r, int level) {
   }
 }
 
+extern void yyrestart(FILE *fp);
 extern int yyparse();
 extern int yydebug;
+extern int yylineno;
+
 int main() {
   yydebug = 0;
+  char file1[200];
+  char file2[200];
+  scanf("%s %s", file1, file2);
+ 
+  FILE *fp1 = fopen(file1, "r");
+  if (!fp1) {
+    printf("Open file error: %s\n", file1);
+    exit(1);
+  }
+  yyrestart(fp1);
   Node *r1 = yyparse();
   dumpTree(r1);
+
+  FILE *fp2 = fopen(file1, "r");
+  if (!fp2) {
+    printf("Open file error: %s\n", file2);
+    exit(1);
+  }
+  yylineno = 1;
+  yyrestart(fp2);
+  Node *r2 = yyparse();
+  dumpTree(r2);
+
+  fclose(fp1);
+  fclose(fp2);
   return 0;
 }
 
