@@ -23,7 +23,7 @@ extern int yylex();
 
 %token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM
 
-%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt
+%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -58,12 +58,16 @@ imports:             {$$ = newNode(IMPORTS, NULL, 0);}
 | imports importdcl  {$$ = $1; addChild($$, $2);}
 ;
 
-importdcl: IMPORT STATIC importpath ';'   {} 
-| IMPORT importpath ';'                   {}
+importdcl: IMPORT STATIC importpath ';'   {Node *t1 = newNode(TERMINAL, "import", 0);
+                                           Node *t2 = newNode(TERMINAL, "static", 0);
+                                           $$ = newNode(IMPORTDCL1, NULL, 3, t1, t2, $3);} 
+| IMPORT importpath ';'                   {Node *t1 = newNode(TERMINAL, "import", 0);
+                                           $$ = newNode(IMPORTDCL2, NULL, 2, t1, $2);}
 ;
 
-importpath: qualifiedidt '.' '*'     
-| qualifiedidt
+importpath: qualifiedidt '.' '*'     {Node *t = newNode(TERMINAL, "*", 0); 
+   $$ = newNode(IMPORTPATH1, NULL, 2, $1, t);}
+| qualifiedidt                       {$$ = NULL;}
 ;
 
 types:          {$$ = newNode(TYPES, NULL, 0);}
