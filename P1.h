@@ -35,6 +35,7 @@ void addChild(Node *p, Node *c);
 
 
 void yyerror(const char *s, ...);
-void dumpTree(Node *a, int level);
+void dumpTree(Node *a);
+void dump(Node *r, int level);
 
 #endif

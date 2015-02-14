@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "P1.h"
 #include "P1Symbol.h"
 
@@ -22,7 +23,7 @@ extern int yylex();
 
 %token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM
 
-%type<a> javafile pkgdcl imports types typedcl
+%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -44,20 +45,21 @@ extern int yylex();
 %start javafile
 
 %%
-javafile: pkgdcl imports types END   {$$ = newRoot($1, $2, $3); dumpTree($$, 0); return 0;}
+javafile: pkgdcl imports types END   {$$ = newRoot($1, $2, $3); dumpTree($$); return 0;}
 ;
 
-pkgdcl:                                 {}
-| PACKAGE qualifiedidt ';'              {}
+pkgdcl:                                 {$$ = NULL;}
+| PACKAGE qualifiedidt ';'              {Node *t = newNode(TERMINAL, "package", 0);
+                                         $$ = newNode(PACKAGE1, NULL, 2, t, $2);}
 | annotations PACKAGE qualifiedidt ';'  {}
 ;
 
-imports:             {}
-| imports importdcl  {}
+imports:             {$$ = newNode(IMPORTS, NULL, 0);}
+| imports importdcl  {$$ = $1; addChild($$, $2);}
 ;
 
-importdcl: IMPORT STATIC importpath ';'    
-| IMPORT importpath ';'  
+importdcl: IMPORT STATIC importpath ';'   {} 
+| IMPORT importpath ';'                   {}
 ;
 
 importpath: qualifiedidt '.' '*'     
@@ -132,8 +134,10 @@ interfaceDcl: normalinterfaceDcl
 | annotationtypedcl
 ;
 
-qualifiedidt: IDT            
-| qualifiedidt '.' IDT       
+qualifiedidt: IDT        { Node *t = newNode(TERMINAL, $1->name, 0);
+   $$ = newNode(QUALIFIEDIDT, NULL, 1, t);}
+| qualifiedidt '.' IDT   { Node *t = newNode(TERMINAL, $3->name, 0);
+   $$ = $1; addChild($$, t);}  
 ;
 
 qualifiedidtlist: qualifiedidt        

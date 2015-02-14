@@ -56,27 +56,35 @@ void yyerror(const char *s, ...) {
   printf("\tLine:%d  %s\n", yylineno, yytext);
 }
 
-void dumpTree(Node *r, int level) {
+void dumpTree(Node *r) {
   addEnums();
+  if (r->type != ROOT) {
+    printf("Not a root!\n");
+    return;
+  }
+  Root *root = (Root *)r;
+  printf("%s\n", TypeToName[root->type]);
+  dump(root->pkg, 1);
+  dump(root->imp, 1);
+  dump(root->types, 1);
+}
+
+void dump(Node *r, int level) {
+  if (!r)
+    return;
+
   printf("%*s", level, "");
   level++;
-  if (r->type == ROOT) {
-    Root *root = (Root *)r;
-    printf("%s\n", TypeToName[root->type]);
-    dumpTree(root->pkg, level);
-    dumpTree(root->imp, level);
-    dumpTree(root->types, level);
-  } else {
-    if (r->type != TERMINAL) {
-      printf("%s\n", TypeToName[r->type]);
-      Node *ptr = r->children;
-      while (ptr) {
-	dumpTree(ptr, level);
-	ptr = ptr->sibling;
-      }
-    } else {
-      printf("%s\n", r->symbol);
+
+  if (r->type != TERMINAL) {
+    printf("%s\n", TypeToName[r->type]);
+    Node *ptr = r->children;
+    while (ptr) {
+      dump(ptr, level);
+      ptr = ptr->sibling;
     }
+  } else {
+    printf("%s\n", r->symbol);
   }
 }
 
