@@ -44,4 +44,5 @@ void yyerror(const char *s, ...);
 void dumpTree(Node *a);
 void dump(Node *r, int level);
 
+void freeTree(Node *r);
 #endif

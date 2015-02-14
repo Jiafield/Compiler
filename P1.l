@@ -103,16 +103,16 @@ struct symbol symtab[TABLE_SIZE];
 "++"|"--"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return PREPOSTFIX;}
 "+"|"-"|"~"|"!" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "*"|"/"|"%" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
-"<<"|">>"|">>>"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return SHIFTOP;}
-"=="|"!=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return EQUALITY;}
-"<="|">=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return CMP;}
+"<<"|">>"|">>>"  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); yylval.s = lookup(yytext, symtab); return SHIFTOP;}
+"=="|"!=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); yylval.s = lookup(yytext, symtab); return EQUALITY;}
+"<="|">=" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); yylval.s = lookup(yytext, symtab);  return CMP;}
 ">"|"<" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "^"|"&"|"|" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
-"&&" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return LOGICAND;}
-"||" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return LOGICOR;}
+"&&" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); yylval.s = lookup(yytext, symtab); return LOGICAND;}
+"||" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); yylval.s = lookup(yytext, symtab); return LOGICOR;}
 "?"|":"|"@" {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
 "="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return yytext[0];}
-"+="|"-="|"*="|"/+"|"%="|"&="|"^="|"|="|"<<="|">>="|">>>="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); return ASSIGN;}
+"+="|"-="|"*="|"/+"|"%="|"&="|"^="|"|="|"<<="|">>="|">>>="  {printf("PUNC\t%s\t\t%d\n", yytext, yylineno); yylval.s = lookup(yytext, symtab); return ASSIGN;}
 
 
  /* Identifier */

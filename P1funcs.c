@@ -97,6 +97,11 @@ void dump(Node *r, int level) {
   }
 }
 
+void freeTree(Node *r) {
+
+}
+
+
 extern void yyrestart(FILE *fp);
 extern int yyparse();
 extern int yydebug;

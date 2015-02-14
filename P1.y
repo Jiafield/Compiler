@@ -23,7 +23,7 @@ extern int yylex();
 
 %token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM
 
-%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody classBodyDcls classBodyDcl typeParameters javatype typelist modifier annotation memberDcl block methodOrFieldDcl voidMethodDclRest constructorDclRest genericMethodOrConstructorDcl methodOrFieldRest basictype idts dimExps
+%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody classBodyDcls classBodyDcl typeParameters javatype typelist modifier annotation memberDcl block methodOrFieldDcl voidMethodDclRest constructorDclRest genericMethodOrConstructorDcl methodOrFieldRest basictype idts dimExps exp exp1 assignOp exp2 exp1Rest exp2Rest infixCat exp3
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -110,7 +110,7 @@ extendslist:          {$$ = newNode(NoExtend, 0);}
 ;
 
 extendstypelist:     
-| EXTENDS typelist   
+| EXTENDS typelist 
 ;
 
 implementslist:         {$$ = newNode(NoImplements, 0);}
@@ -483,30 +483,33 @@ forUpdate: exp
 | forUpdate ',' exp    
 ;
 
-exp: exp1
-| exp1 assignOp exp
+exp: exp1              { $$ = $1; }
+| exp1 assignOp exp    { $$ = newNode(EXP, 3, $1, $2, $3); }
 ;
 
-assignOp: '='  
-| ASSIGN       
+assignOp: '='  { $$ = newLeaf("=");}
+| ASSIGN       { $$ = newLeaf("assign");}
 ;
 
-exp1: exp2
-| exp2 exp1Rest
+exp1: exp2         { $$ =$1; }
+| exp2 exp1Rest    { $$ = newNode(EXP1, 2, $1, $2); }
 ;
 
-exp1Rest: '?' exp ':' exp1  
+exp1Rest: '?' exp ':' exp1  { Node *t1 = newLeaf("?"); 
+                              Node *t2 = newLeaf(":"); 
+                              $$ = newNode(EXP1REST, 4, t1, $2, t2, $4);}
 ;
 
-exp2: exp3
-| exp3 exp2Rest
+exp2: exp3         { $$ = $1; }
+| exp3 exp2Rest    { $$ = newNode(EXP2, 2, $1, $2); }
 ;
 
-exp2Rest: INSTANCEOF javatype
-| infixCat
+exp2Rest: INSTANCEOF javatype  { Node *t = newLeaf("instanceof");
+                                 $$ = newNode(EXP2REST, 2, t, $2);}
+| infixCat               { $$ = newNode(EXP2REST, 1, $1); }
 ;
 
-infixCat: infixOp exp3
+infixCat: infixOp exp3    {}
 | infixCat infixOp exp3
 ;
 
@@ -600,10 +603,20 @@ arrayCreatorRest: arrayInitializer
 |
 ;
 
-dimExps: '[' ']'        {$$ = newNode(TEMP, 0);}
-| '[' exp ']'           {$$ = newNode(TEMP, 0);}
-| dimExps '[' exp ']'   {$$ = newNode(TEMP, 0);}
-| dimExps '[' ']'       {$$ = newNode(TEMP, 0);}
+dimExps: '[' ']'        { Node *t1 = newLeaf("[");
+                          Node *t2 = newLeaf("]");
+                          $$ = newNode(DIM1, 2, t1, t2);}
+| '[' exp ']'           { Node *t1 = newLeaf("[");
+                          Node *t2 = newLeaf("]");
+                          $$ = newNode(DIM2, 3, t1, $2, t2);}
+| dimExps '[' exp ']'   { $$ = $1; 
+                          Node *t1 = newLeaf("[");
+                          Node *t2 = newLeaf("]");
+                          addChild($$, t1); addChild($$, $3); addChild($$, t2);}
+| dimExps '[' ']'       { $$ = $1; 
+                          Node *t1 = newLeaf("[");
+                          Node *t2 = newLeaf("]");
+                          addChild($$, t1); addChild($$, t2);}
 ;
 
 idtSuffix: args
