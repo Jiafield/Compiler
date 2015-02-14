@@ -23,7 +23,7 @@ extern int yylex();
 
 %token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM
 
-%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody classBodyDcls classBodyDcl typeParameters javatype typelist modifier annotation memberDcl block methodOrFieldDcl voidMethodDclRest constructorDclRest genericMethodOrConstructorDcl methodOrFieldRest basictype idts dimExps exp exp1 assignOp exp2 exp1Rest exp2Rest infixCat exp3 fieldDclsRest methodDclRest varDcls varDcl varDclRest varInitializer arrayInitializer sqBrackets formalParameters formalParameterDcls formalParameterDclsRest varDclId throwlist qualifiedidtlist varInitializers blockStmts blockStmt localVarDclStmt 
+%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody classBodyDcls classBodyDcl typeParameters javatype typelist modifier annotation memberDcl block methodOrFieldDcl voidMethodDclRest constructorDclRest genericMethodOrConstructorDcl methodOrFieldRest basictype idts dimExps exp exp1 assignOp exp2 exp1Rest exp2Rest infixCat exp3 fieldDclsRest methodDclRest varDcls varDcl varDclRest varInitializer arrayInitializer sqBrackets formalParameters formalParameterDcls formalParameterDclsRest varDclId throwlist qualifiedidtlist varInitializers blockStmts blockStmt localVarDclStmt localVarDcl stmt parExp switchBlockStmtGroups forControl catches finally resourceSpec
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -389,7 +389,7 @@ arrayInitializer: '{' '}'      { $$ = newNode(EMPTYARRAY, 0); }
 | '{' varInitializers ',' '}'  { Node *t = newLeaf(","); $$ = newNode(VARINITIALIZER2, 2, $2, t); }
 ;
 
-block: '{' blockStmts '}'   { $$ = $1; }
+block: '{' blockStmts '}'   { $$ = $2; }
 ;
 
 blockStmts:                { $$ = newNode(BLOCKSTMTS, 0); }
@@ -404,37 +404,37 @@ blockStmt: localVarDclStmt   { $$ = $1; }
 localVarDclStmt: localVarDcl ';'   { $$ = $1; }
 ;
 
-localVarDcl: javatype varDcls    {}
-| modifiers javatype varDcls
+localVarDcl: javatype varDcls    { $$ = newNode(LOCALVARDCL1, 2, $1, $2);}
+| modifiers javatype varDcls     { $$ = newNode(LOCALVARDCL2, 3, $1, $2, $3); }
 ;
 
-stmt: block
-| ';'
-| IDT ':' stmt
-| exp ';'
-| IF parExp stmt
-| IF parExp stmt ELSE stmt
-| ASSERT exp ';'
-| ASSERT exp ':' exp ';'
-| SWITCH parExp '{' switchBlockStmtGroups '}'
-| WHILE parExp stmt
-| DO stmt WHILE parExp ';'
-| FOR '(' forControl ')' stmt
-| BREAK ';'
-| BREAK IDT ';'
-| CONTINUE ';'
-| CONTINUE IDT ';'
-| RETURN ';'
-| RETURN exp ';'
-| THROW exp ';'
-| SYNCHRONIZED parExp block
-| TRY block catches
-| TRY block finally
-| TRY block catches finally
-| TRY resourceSpec block
-| TRY resourceSpec block catches
-| TRY resourceSpec block finally
-| TRY resourceSpec block catches finally
+stmt: block                     { $$ = $1; }
+| ';'                           { $$ = newLeaf(";"); }
+| IDT ':' stmt                  { Node *t = newLeaf($1->name); $$ = newNode(STMT1, 3, $1, t, $3);}
+| exp ';'                       { $$ = $1; }
+| IF parExp stmt                { Node *t = newLeaf("if"); $$ = newNode(STMT2, 3, t, $2, $3); }
+| IF parExp stmt ELSE stmt      { Node *t1 = newLeaf("if"); Node *t2 = newLeaf("else"); $$ = newNode(STMT3, 5, t1, $2, $3, t2, $5);}
+| ASSERT exp ';'                { Node *t = newLeaf("assert"); $$ = newNode(STMT4, 2, t, $2);}
+| ASSERT exp ':' exp ';'        { Node *t1 = newLeaf("assert"); Node *t2 = newLeaf(":"); $$ = newNode(STMT5, 4, t1, $2, t2, $4);}
+| SWITCH parExp '{' switchBlockStmtGroups '}'   { Node *t = newLeaf("switch"); $$ = newNode(STMT6, 3, t, $2, $4);}
+| WHILE parExp stmt             { Node *t = newLeaf("while"); $$ = newNode(STMT7, 3, t, $2, $3);}
+| DO stmt WHILE parExp ';'      { Node *t1 = newLeaf("do"); Node *t2 = newLeaf("while"); $$ = newNode(STMT8, 4, t1, $2, t2, $4); }
+| FOR '(' forControl ')' stmt   { Node *t = newLeaf("for"); $$ = newNode(STMT9, 3, t, $3, $5);}
+| BREAK ';'                     { $$ = newLeaf("break");}
+| BREAK IDT ';'                 { Node *t1 = newLeaf("break"); Node *t2 = newLeaf($2->name); $$ = newNode(STMT10, 2, t1, t2); }
+| CONTINUE ';'                  { $$ = newLeaf("continue");}
+| CONTINUE IDT ';'              { Node *t1 = newLeaf("continue"); Node *t2 = newLeaf($2->name); $$ = newNode(STMT11, 2, t1, t2); }
+| RETURN ';'                    { $$ = newLeaf("return");}
+| RETURN exp ';'                { Node *t = newLeaf("return"); $$ = newNode(STMT12, 2, t, $2);}
+| THROW exp ';'                 { Node *t = newLeaf("throw"); $$ = newNode(STMT13, 2, t, $2);}
+| SYNCHRONIZED parExp block     { Node *t = newLeaf("synchronized"); $$ = newNode(STMT14, 3, t, $2, $3);}
+| TRY block catches             { Node *t = newLeaf("try"); $$ = newNode(STMT15, 3, t, $2, $3);}
+| TRY block finally             { Node *t = newLeaf("try"); $$ = newNode(STMT16, 3, t, $2, $3);}
+| TRY block catches finally     { Node *t = newLeaf("try"); $$ = newNode(STMT17, 4, t, $2, $3, $4);}
+| TRY resourceSpec block        { Node *t = newLeaf("try"); $$ = newNode(STMT18, 3, t, $2, $3);}
+| TRY resourceSpec block catches  { Node *t = newLeaf("try"); $$ = newNode(STMT19, 4, t, $2, $3, $4);}
+| TRY resourceSpec block finally   { Node *t = newLeaf("try"); $$ = newNode(STMT20, 4, t, $2, $3, $4);}
+| TRY resourceSpec block catches finally   { Node *t = newLeaf("try"); $$ = newNode(STMT21, 5, t, $2, $3, $4, $5);}
 ;
 
 catches: catchClause
