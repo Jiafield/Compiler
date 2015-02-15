@@ -23,7 +23,7 @@ extern int yylex();
 
 %token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM
 
-%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody classBodyDcls classBodyDcl typeParameters javatype typelist modifier annotation memberDcl block methodOrFieldDcl voidMethodDclRest constructorDclRest genericMethodOrConstructorDcl methodOrFieldRest basictype idts dimExps exp exp1 assignOp exp2 exp1Rest exp2Rest infixCat exp3 fieldDclsRest methodDclRest varDcls varDcl varDclRest varInitializer arrayInitializer sqBrackets formalParameters formalParameterDcls formalParameterDclsRest varDclId throwlist qualifiedidtlist varInitializers blockStmts blockStmt localVarDclStmt localVarDcl stmt parExp switchBlockStmtGroups forControl catches finally resourceSpec
+%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody classBodyDcls classBodyDcl typeParameters javatype typelist modifier annotation memberDcl block methodOrFieldDcl voidMethodDclRest constructorDclRest genericMethodOrConstructorDcl methodOrFieldRest basictype idts dimExps exp exp1 assignOp exp2 exp1Rest exp2Rest infixCat exp3 fieldDclsRest methodDclRest varDcls varDcl varDclRest varInitializer arrayInitializer sqBrackets formalParameters formalParameterDcls formalParameterDclsRest varDclId throwlist qualifiedidtlist varInitializers blockStmts blockStmt localVarDclStmt localVarDcl stmt parExp switchBlockStmtGroups forControl catches finally resourceSpec resources resource catchType catchClause switchBlockStmtGroup switchLabels switchLabel forInit forUpdate infixOp prefixOp postfixOp postfixOps primary selectors selector literal args superSuffix idtSuffix exps creator arrayCreatorRest classCreatorRest innerCreator
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -355,9 +355,9 @@ formalParameterDcls: javatype formalParameterDclsRest { $$ = newNode(FORMALPARAM
 formalParameterDclsRest: varDclId   { $$ = $1; }
 | varDclId ',' formalParameterDcls  { $$ = newNode(FORMALPARAMETERSDCLREST1, 2, $1, $3); }
 | '.' '.' '.' varDclId              { Node *t1 = newLeaf(".");
-   Node *t2 = newLeaf(".");
-   Node *t3 = newLeaf(".");
-   $$ = newNode(FORMALPARAMETERSDCLREST2, 4, t1, t2, t3, $4);}
+                                      Node *t2 = newLeaf(".");
+                                      Node *t3 = newLeaf(".");
+                                      $$ = newNode(FORMALPARAMETERSDCLREST2, 4, t1, t2, t3, $4);}
 ;
 
 varDclId: IDT sqBrackets   { Node *t = newLeaf($1->name); $$ = newNode(VARDCLID, 2, t, $2);}
@@ -368,7 +368,7 @@ varDcls: varDcl   { $$ = newNode(VARDCLS, 1, $1); }
 ;
 
 varDcl: IDT varDclRest   { Node *t = newLeaf($1->name); 
-   $$ = newNode(VARDCL, 2, t, $2);}
+                           $$ = newNode(VARDCL, 2, t, $2);}
 ;
 
 varDclRest: sqBrackets              { $$ = $1; }
@@ -437,64 +437,74 @@ stmt: block                     { $$ = $1; }
 | TRY resourceSpec block catches finally   { Node *t = newLeaf("try"); $$ = newNode(STMT21, 5, t, $2, $3, $4, $5);}
 ;
 
-catches: catchClause
-| catches catchClause
+catches: catchClause    { $$ = newNode(CATCHES, 1, $1); }
+| catches catchClause   { $$ = $1; addChild($$, $2); }
 
 catchClause: CATCH '(' modifiers catchType IDT ')' block 
+{ Node *t1 = newLeaf("catch");
+  Node *t2 = newLeaf($5->name);
+  $$ = newNode(CATCHCLAUSE1, 5, t1, $3, $4, t2, $7);
+}
 | CATCH '(' catchType IDT ')' block 
+{ Node *t1 = newLeaf("catch");
+  Node *t2 = newLeaf($4->name);
+  $$ = newNode(CATCHCLAUSE2, 4, t1, $3, t2, $6);
+}
 ;
 
-catchType: qualifiedidt
-| catchType '|' qualifiedidt
+catchType: qualifiedidt       { $$ = newNode(CATCHTYPE, 1, $1); }
+| catchType '|' qualifiedidt  { $$ = $1; addChild($$, $3); }
 ;
 
-finally: FINALLY block 
+finally: FINALLY block    { Node *t = newLeaf("finally"); 
+                            $$ = newNode(FINALLYCLAUSE, 2, t, $2);}
 ;
 
-resourceSpec: '(' resources ')'  
-| '(' resources ';' ')'
+resourceSpec: '(' resources ')'  { $$ = newNode(RESOURCESPEC1, 1, $2); }
+| '(' resources ';' ')'          { Node *t = newLeaf(";"); $$ = newNode(RESOURCESPEC2, 2, $2, t); }
 ;
 
-resources: resource
-| resources ';' resource
+resources: resource        { $$ = newNode(RESOURCES, 1, $1); }
+| resources ';' resource   { $$ = $1, addChild($$, $3); }
 ;
 
-resource:  idts varDclId '=' exp
-| modifiers idts varDclId '=' exp
+resource:  idts varDclId '=' exp   { Node *t = newLeaf("="); $$ = newNode(RESOURCE1, 4, $1, $2, t, $4); }
+| modifiers idts varDclId '=' exp  { Node *t = newLeaf("="); $$ = newNode(RESOURCE2, 5, $1, $2, $3, t, $5); }
 ;
 
-switchBlockStmtGroups:     
+switchBlockStmtGroups:     { $$ = newNode(SWITCHGROUPS, 0); }
 | switchBlockStmtGroups switchBlockStmtGroup
+{ $$ = $1; addChild($$, $2); }
 ;
 
-switchBlockStmtGroup: switchLabels blockStmts
+switchBlockStmtGroup: switchLabels blockStmts { $$ = newNode(SWITCHGROUP, 2, $1, $2); }
 ;
 
-switchLabels: switchLabel       
-| switchLabels switchLabel
+switchLabels: switchLabel       { $$ = newNode(SWITCHLABELS, 1, $1); }
+| switchLabels switchLabel      { $$ = $1; addChild($$, $2);}
 ;
 
-switchLabel: CASE exp ':'    
-| CASE IDT ':'  
-| DEFAULT ':'                
+switchLabel: CASE exp ':'    { Node *t = newLeaf("case"); $$ = newNode(SWITCHLABEL1, 2, t, $2); }
+| CASE IDT ':'   { Node *t1 = newLeaf("case"); Node *t2 = newLeaf($2->name); $$ = newNode(SWITCHLABEL2, 2, t1, t2); }
+| DEFAULT ':'    { Node *t = newLeaf("default"); $$ = newNode(SWITCHLABEL3, 1, t);}
 ;
 
-forControl: ';' ';'
-| forInit ';' ';'           
-| forInit ';' exp ';'            
-| forInit ';' exp ';' forUpdate  
-| forInit ';' ';' forUpdate      
-| localVarDcl ':' exp
+forControl: ';' ';'              { $$ = newNode(FORCONTROL1, 0); }
+| forInit ';' ';'                { $$ = newNode(FORCONTROL2, 1, $1);}
+| forInit ';' exp ';'            { $$ = newNode(FORCONTROL3, 2, $1, $3);}
+| forInit ';' exp ';' forUpdate  { $$ = newNode(FORCONTROL4, 3, $1, $3, $5);}
+| forInit ';' ';' forUpdate      { $$ = newNode(FORCONTROL5, 2, $1, $4);}
+| localVarDcl ':' exp            { $$ = newNode(FORCONTROL6, 2, $1, $3);}
 ;
 
-forInit: localVarDcl
-| exp
-| forInit ',' exp
-| forInit ',' localVarDcl   
+forInit: localVarDcl          { $$ = newNode(FORINIT, 1, $1); }
+| exp                         { $$ = newNode(FORINIT, 1, $1); }
+| forInit ',' exp             { $$ = $1; addChild($$, $3); }
+| forInit ',' localVarDcl     { $$ = $1; addChild($$, $3); }
 ;
 
-forUpdate: exp
-| forUpdate ',' exp    
+forUpdate: exp          { $$ = newNode(FORUPDATE, 1, $1); }
+| forUpdate ',' exp     { $$ = $1; addChild($$, $3);}
 ;
 
 exp: exp1              { $$ = $1; }
@@ -523,77 +533,77 @@ exp2Rest: INSTANCEOF javatype  { Node *t = newLeaf("instanceof");
 | infixCat               { $$ = newNode(EXP2REST, 1, $1); }
 ;
 
-infixCat: infixOp exp3    {}
-| infixCat infixOp exp3
+infixCat: infixOp exp3    { $$ = newNode(INFIXCAT1, 2, $1, $2); }
+| infixCat infixOp exp3   { $$ = newNode(INFIXCAT2, 3, $1, $2, $3); }
 ;
 
-infixOp: LOGICOR
-| LOGICAND
-| '|'
-| '^'
-| '&'
-| CMP
-| EQUALITY
-| '<'
-| '>'
-| SHIFTOP
-| '+'
-| '-'
-| '*'
-| '/'
-| '%'
+infixOp: LOGICOR  { $$ = newLeaf("||"); }
+| LOGICAND        { $$ = newLeaf("&&"); }
+| '|'             { $$ = newLeaf("|"); }
+| '^'             { $$ = newLeaf("^"); }
+| '&'             { $$ = newLeaf("&"); }
+| CMP             { $$ = newLeaf("compare"); }
+| EQUALITY        { $$ = newLeaf("=="); }
+| '<'             { $$ = newLeaf("<"); }
+| '>'             { $$ = newLeaf(">"); }
+| SHIFTOP         { $$ = newLeaf("shift"); }
+| '+'             { $$ = newLeaf("+"); }
+| '-'             { $$ = newLeaf("-"); }
+| '*'             { $$ = newLeaf("*"); }
+| '/'             { $$ = newLeaf("/"); }
+| '%'             { $$ = newLeaf("%"); }
 ;
 
-prefixOp: PREPOSTFIX
-| '!'
-| '~'
-| '+'
-| '-'
+prefixOp: PREPOSTFIX  { $$ = newLeaf("++OR--"); }
+| '!'                 { $$ = newLeaf("!"); }
+| '~'                 { $$ = newLeaf("~"); }
+| '+'                 { $$ = newLeaf("+"); }
+| '-'                 { $$ = newLeaf("-"); }
 ;
 
-postfixOp: PREPOSTFIX
+postfixOp: PREPOSTFIX  { $$ = newLeaf("++OR--"); }
 ;
 
-postfixOps:
-| postfixOps postfixOp
+postfixOps:             { $$ = newNode(POSTFIXOPS, 0); }
+| postfixOps postfixOp  { $$ = $1; addChild($$, $2); }
 ;
 
-exp3: prefixOp exp3
-| '(' javatype ')' exp3
-| '(' exp ')' exp3
-| primary selectors postfixOps
+exp3: prefixOp exp3               {$$ = newNode(EXP3, 2, $1, $2);}
+| '(' javatype ')' exp3           {$$ = newNode(EXP4, 2, $2, $4);}
+| '(' exp ')' exp3                {$$ = newNode(EXP5, 2, $2, $4);}
+| primary selectors postfixOps    {$$ = newNode(EXP6, 3, $1, $2, $3);}
 ;
 
-primary: literal
-| parExp
-| THIS
-| THIS args
-| SUPER superSuffix
-| NEW creator
-| javatype
-| idts idtSuffix
-| basictype '.' CLASS
-| VOID '.' CLASS
+primary: literal      { $$ = newNode(PRIMARY1, 1, $1); }
+| parExp              { $$ = newNode(PRIMARY2, 1, $1); }
+| THIS                { $$ = newLeaf("this"); }
+| THIS args           { Node *t = newLeaf("this"); $$ = newNode(PRIMARY3, 2, t, $2);}
+| SUPER superSuffix   { Node *t = newLeaf("super"); $$ = newNode(PRIMARY4, 2, t, $2);}
+| NEW creator         { Node *t = newLeaf("new"); $$ = newNode(PRIMARY5, 2, t, $2);}
+| javatype            { $$ = newNode(PRIMARY6, 1, $1); }
+| idts idtSuffix      { $$ = newNode(PRIMARY7, 2, $1, $2); }
+| basictype '.' CLASS { Node *t = newLeaf("class"); $$ = newNode(PRIMARY8, 2, $1, t); }
+| VOID '.' CLASS      { Node *t1 = newLeaf("void"); Node *t2 = newLeaf("class"); $$ = newNode(PRIMARY9, 2, t1, t2);}
 ;
 
-literal: INTEGER
-| DOUBLE
-| CHARACTER
-| STRING
-| TRUE
-| FALSE
-| NULLSYM
+literal: INTEGER  { $$ = newLeaf("int"); }
+| DOUBLE          { $$ = newLeaf("double"); }
+| CHARACTER       { $$ = newLeaf("char"); }
+| STRING          { $$ = newLeaf("string"); }
+| TRUE            { $$ = newLeaf("true"); }
+| FALSE           { $$ = newLeaf("false"); }
+| NULLSYM         { $$ = newLeaf("null"); }
 ;
 
-parExp: '(' exp ')'  
+parExp: '(' exp ')'  { $$ = $2; }
 ;
 
-args: '('  ')'
-| '(' exps ')'
+args: '('  ')'  { $$ = newNode(NOARGS, 0); }
+| '(' exps ')'  { $$ = $2; }
 ;
 
-exps: exp
-| exps ',' exp
+exps: exp       { $$ = newNode(EXPS, 1, $1); }
+| exps ',' exp  { $$ = $1; addChild($$, $3); }
 ;
 
 idts: IDT         {Node *t = newLeaf($1->name);
@@ -601,20 +611,20 @@ idts: IDT         {Node *t = newLeaf($1->name);
 | idts '.' IDT    {$$ = $1; Node *t = newLeaf($3->name); addChild($$, t);}
 ;
 
-superSuffix: args
-| '.' IDT args  
+superSuffix: args   { $$ = $1; }
+| '.' IDT args      { Node *t = newLeaf($2->name); $$ = newNode(SUPERSUFFIX, 2, t, $3); }
 ;
 
-creator: idts classCreatorRest
-| javatype arrayCreatorRest
+creator: idts classCreatorRest  { $$ = newNode(CREATOR1, 2, $1, $2); }
+| javatype arrayCreatorRest     { $$ = newNode(CREATOR2, 2, $1, $2); }
 ;
 
-classCreatorRest: args
-| args classbody
+classCreatorRest: args   { $$ = $1; }
+| args classbody         { $$ = newNode(CLASSCREATORREST, 2, $1, $2); }
 ;
 
-arrayCreatorRest: arrayInitializer
-|
+arrayCreatorRest: arrayInitializer { $$ = $1; }
+|                                  { $$ = NULL; }
 ;
 
 dimExps: '[' ']'        { Node *t1 = newLeaf("[");
@@ -643,16 +653,16 @@ idtSuffix: args
 innerCreator: IDT classCreatorRest
 ;
 
-selector: '.' IDT
-| '.' IDT args
-| '.' THIS
-| '.' SUPER superSuffix
-| '.' NEW innerCreator
-| '[' exp ']'
+selector: '.' IDT        { $$ = newLeaf($2->name);}
+| '.' IDT args           { Node *t = newLeaf($2->name); $$ = newNode(SELECTOR1, 2, t, $3);}
+| '.' THIS               { $$ = newLeaf("this");}
+| '.' SUPER superSuffix  { Node *t = newLeaf("super"); $$ = newNode(SELECTOR2, 2, t, $3);}
+| '.' NEW innerCreator   { Node *t = newLeaf("new"); $$ = newNode(SELECTOR3, 2, t, $3);}
+| '[' exp ']'            { $$ = $2; }
 ;
 
-selectors:
-| selectors selector
+selectors:             { $$ = newNode(SELECTORS, 0);}
+| selectors selector   { $$ = $1; addChild($$, $2); }
 ;
 
 enumBody: '{' idts '}'

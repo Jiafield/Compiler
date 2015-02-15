@@ -81,7 +81,7 @@ void dump(Node *r, int level) {
   if (!r)
     return;
 
-  printf("%*s", level * 2, "");
+  printf("%*s", level, "");
   level++;
 
   if (r->type != TERMINAL) {
