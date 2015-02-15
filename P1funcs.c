@@ -28,6 +28,7 @@ Node *newNode(RULE_TYPE t, int cNum, ...) {
   n->type = t;
   n->sibling = NULL;
   n->children = NULL;
+  n->cNum = 0;
   // Add children
   va_start(ap, cNum);
   for (i = 0; i < cNum; i++) {
@@ -52,6 +53,7 @@ void addChild(Node *p, Node *c) {
     p->lastChildren->sibling = c;
   }
   p->lastChildren = c;
+  (p->cNum)++;
 }
 
 extern char* yytext;
@@ -97,6 +99,31 @@ void dump(Node *r, int level) {
   }
 }
 
+int cmpTree(Node *r1, Node *r2) {
+  
+  return 0;
+}
+
+int naiveCmp(Node *r1, Node *r2) {
+  // Compare if 2 subtrees are exactly the same
+  // return 0 means false, 1 means true
+  if (r1->type != r2->type)
+    return 0;
+  if (r1->type == TERMINAL) {
+    return 1;
+  } else {
+    if (r1->cNum != r2->cNum)
+      return 0;
+    Node *p1 = r1->children, *p2 = r2->children;
+    int num = p1->cNum, i;
+    for (i = 0; i < num; i++) {
+      if (!naiveCmp(p1, p2))
+	return 0;
+    }
+  }
+  return 1;
+}
+
 void freeTree(Node *r) {
 
 }
@@ -106,6 +133,7 @@ extern void yyrestart(FILE *fp);
 extern int yyparse();
 extern int yydebug;
 extern int yylineno;
+Node *globalRoot;
 
 int main() {
   yydebug = 0;
@@ -119,7 +147,8 @@ int main() {
     exit(1);
   }
   yyrestart(fp1);
-  Node *r1 = yyparse();
+  yyparse();
+  Node *r1 = globalRoot;
   dumpTree(r1);
 
   FILE *fp2 = fopen(file1, "r");
@@ -129,7 +158,8 @@ int main() {
   }
   yylineno = 1;
   yyrestart(fp2);
-  Node *r2 = yyparse();
+  yyparse();
+  Node *r2 = globalRoot;
   dumpTree(r2);
 
   fclose(fp1);

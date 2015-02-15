@@ -45,12 +45,12 @@ extern int yylex();
 %start javafile
 
 %%
-javafile: pkgdcl imports types END   {$$ = newRoot($1, $2, $3); return $$;}
+javafile: pkgdcl imports types END   { globalRoot = newRoot($1, $2, $3); return 0;}
 ;
 
-pkgdcl:                                 {$$ = newNode(PACKAGE0, 0);}
-| PACKAGE qualifiedidt ';'              {Node *t = newLeaf("package");
-                                         $$ = newNode(PACKAGE1, 2, t, $2);}
+pkgdcl:                                 { $$ = newNode(PACKAGE0, 0);}
+| PACKAGE qualifiedidt ';'              { Node *t = newLeaf("package");
+                                          $$ = newNode(PACKAGE1, 2, t, $2);}
 | annotations PACKAGE qualifiedidt ';'  {}
 ;
 

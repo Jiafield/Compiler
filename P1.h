@@ -10,6 +10,7 @@ typedef enum {
 } RULE_TYPE;
 
 char *TypeToName[RULESEND];
+
 void addEnum(RULE_TYPE x);
 
 typedef struct node {
@@ -17,6 +18,7 @@ typedef struct node {
   struct node *sibling;
   struct node *children;
   struct node *lastChildren;
+  int cNum;
 } Node;
 
 typedef struct leaf {
@@ -31,6 +33,8 @@ typedef struct root {
   Node *imp;
   Node *types;
 } Root;
+
+extern Node *globalRoot;
 
 Node *newRoot(Node *pkg, Node *imp, Node *types);
 
