@@ -139,13 +139,37 @@ int naiveCmp(Node *r1, Node *r2, Pair **table) {
   } else {
     if (r1->cNum != r2->cNum)
       return 0;
-    Node *p1 = r1->children, *p2 = r2->children;
-    int num = r1->cNum, i;
-    for (i = 0; i < num; i++) {
-      if (!naiveCmp(p1, p2, table))
-	return 0;
-      p1 = p1->sibling;
-      p2 = p2->sibling;
+    int num = r1->cNum, i, j;
+    int *status = (int *)calloc(num, sizeof(int));
+    if (r1->type == TYPES || r1->type == CLASSBODYDCLS) {
+      Node *cur1 = r1->children;
+      for (i = 0; i < num; i++) {
+	Node *cur2 = r2->children;
+	int found = 0;
+	for (j = 0; j < num; j++) {
+	  if (status[j]) {
+	    cur2 = cur2->sibling;
+	    continue;
+	  }
+	  if (naiveCmp(cur1, cur2, table)) {
+	    found = 1;
+	    status[j] = 1;
+	    break;
+	  }
+	  cur2 = cur2->sibling;
+	}	
+	if (!found)
+	  return 0;
+	cur1 = cur1->sibling;
+      }
+    } else {
+      Node *p1 = r1->children, *p2 = r2->children;
+      for (i = 0; i < num; i++) {
+	if (!naiveCmp(p1, p2, table))
+	  return 0;
+	p1 = p1->sibling;
+	p2 = p2->sibling;
+      }
     }
   }
   return 1;
@@ -193,9 +217,9 @@ int main() {
     printf("****** Matching Symbols ******\n");
     printPair(symbolPair);
     printf("******************************\n");
-    printf("Two files are equivalent.\n");
+    printf("Two files are equivalent.\n\n");
   } else {
-    printf("Two files are not equivalent.\n");
+    printf("Two files are not equivalent.\n\n");
   }
   fclose(fp1);
   fclose(fp2);
