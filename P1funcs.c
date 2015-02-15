@@ -137,29 +137,36 @@ int naiveCmp(Node *r1, Node *r2, Pair **table) {
       return 1;
     }
   } else {
+    // Non terminal nodes
     if (r1->cNum != r2->cNum)
       return 0;
     int num = r1->cNum, i, j;
+    // Use status table to store the matching status.
     int *status = (int *)calloc(num, sizeof(int));
+    // Use pair table to store the temporary symbol matching result
     if (r1->type == TYPES || r1->type == CLASSBODYDCLS) {
+      // Handle reordering of classes and methods
       Node *cur1 = r1->children;
       for (i = 0; i < num; i++) {
 	Node *cur2 = r2->children;
 	int found = 0;
+	Pair *tempTable = NULL;
 	for (j = 0; j < num; j++) {
 	  if (status[j]) {
 	    cur2 = cur2->sibling;
 	    continue;
 	  }
-	  if (naiveCmp(cur1, cur2, table)) {
+	  if (naiveCmp(cur1, cur2, &tempTable)) {
 	    found = 1;
 	    status[j] = 1;
 	    break;
 	  }
 	  cur2 = cur2->sibling;
 	}	
-	if (!found)
+	if (!found) {
 	  return 0;
+	}
+	catPairs(table, tempTable);
 	cur1 = cur1->sibling;
       }
     } else {

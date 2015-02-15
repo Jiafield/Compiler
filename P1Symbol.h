@@ -16,5 +16,6 @@ struct symbol *lookup(char *, struct symbol *symtab);
 int lookupPair(Pair *p, char *s1, char*s2);
 void addPair(Pair **p, char *s1, char *s2);
 void printPair(Pair *p);
+void catPairs(Pair **p, Pair *temp);
 
 #endif

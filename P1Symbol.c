@@ -78,3 +78,12 @@ void printPair(Pair *p) {
     ptr = ptr->next;
   }
 }
+
+void catPairs(Pair **p, Pair *temp) {
+  if (!temp)
+    return;
+  Pair *tail = temp;
+  while (tail->next) tail = tail->next;
+  tail->next = *p;
+  *p = temp;
+}

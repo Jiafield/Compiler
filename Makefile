@@ -16,4 +16,4 @@ P1funcs.o: P1funcs.c
 	gcc -g -Wall -c P1funcs.c
 
 clean:
-	rm -f P1 lex.yy.c P1.tab.c P1.tab.h *.o *~
+	rm -f P1 lex.yy.c P1.tab.c P1.tab.h P1.output *.o *~
