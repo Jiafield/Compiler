@@ -23,7 +23,7 @@ extern int yylex();
 
 %token ABSTRACT ASSERT BOOLEAN BREAK BYTE CASE CATCH CHAR CLASS CONST CONTINUE DEFAULT DO DOUBLETYPE FLOAT IF INT ELSE END PACKAGE IMPORT STATIC CHARACTER LONG SHORT WHILE RETURN FOR TRY SWITCH PRIVATE PROTECTED PUBLIC SUPER EXTENDS FINAL FINALLY NATIVE SYNCHRONIZED TRANSIENT VOLATILE STRICTFP IMPLEMENTS ENUM INTERFACE THROW THROWS VOID  THIS NEW STRING TRUE FALSE NULLSYM
 
-%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody classBodyDcls classBodyDcl typeParameters javatype typelist modifier annotation memberDcl block methodOrFieldDcl voidMethodDclRest constructorDclRest genericMethodOrConstructorDcl methodOrFieldRest basictype idts dimExps exp exp1 assignOp exp2 exp1Rest exp2Rest infixCat exp3 fieldDclsRest methodDclRest varDcls varDcl varDclRest varInitializer arrayInitializer sqBrackets formalParameters formalParameterDcls formalParameterDclsRest varDclId throwlist qualifiedidtlist varInitializers blockStmts blockStmt localVarDclStmt localVarDcl stmt parExp switchBlockStmtGroups forControl catches finally resourceSpec resources resource catchType catchClause switchBlockStmtGroup switchLabels switchLabel forInit forUpdate infixOp prefixOp postfixOp postfixOps primary selectors selector literal args superSuffix idtSuffix exps creator arrayCreatorRest classCreatorRest innerCreator
+%type<a> javafile pkgdcl imports importdcl types typedcl qualifiedidt importpath classDcl interfaceDcl modifiers normalclassDcl enumdcl typeParametersList extendslist implementslist classbody classBodyDcls classBodyDcl typeParameters javatype typelist modifier annotation memberDcl block methodOrFieldDcl voidMethodDclRest constructorDclRest genericMethodOrConstructorDcl methodOrFieldRest basictype idts dimExps exp exp1 assignOp exp2 exp1Rest exp2Rest infixCat exp3 fieldDclsRest methodDclRest varDcls varDcl varDclRest varInitializer arrayInitializer sqBrackets formalParameters formalParameterDcls formalParameterDclsRest varDclId throwlist qualifiedidtlist varInitializers blockStmts blockStmt localVarDclStmt localVarDcl stmt parExp switchBlockStmtGroups forControl catches finally resourceSpec resources resource catchType catchClause switchBlockStmtGroup switchLabels switchLabel forInit forUpdate infixOp prefixOp postfixOp postfixOps primary selectors selector literal args superSuffix idtSuffix exps creator arrayCreatorRest classCreatorRest innerCreator normalinterfaceDcl extendstypelist enumBody interfacebody parameterlist typeparameter bound genericMethodOrConstructorRest annotationtypedcl 
 
 %right '=' ASSIGN
 %right '?' ':'
@@ -65,36 +65,42 @@ importdcl: IMPORT STATIC importpath ';'   {Node *t1 = newLeaf("import");
                                            $$ = newNode(IMPORTDCL2,  2, t1, $2);}
 ;
 
-importpath: qualifiedidt '.' '*'     {Node *t = newLeaf("*"); 
-   $$ = newNode(IMPORTPATH1, 2, $1, t);}
-| qualifiedidt                       {$$ = newNode(IMPORTPATH2, 1, $1);}
+importpath: qualifiedidt '.' '*'     { Node *t = newLeaf("*"); 
+                                       $$ = newNode(IMPORTPATH1, 2, $1, t);}
+| qualifiedidt                       { $$ = newNode(IMPORTPATH2, 1, $1);}
 ;
 
-types:          {$$ = newNode(TYPES, 0);}
-| types typedcl {$$ = $1; addChild($$, $2);}
+types:          { $$ = newNode(TYPES, 0);}
+| types typedcl { $$ = $1; addChild($$, $2);}
 ;
 
-typedcl: classDcl         {$$ = newNode(TYPEDCL1, 1, $1);}
-| interfaceDcl            {$$ = newNode(TYPEDCL2, 1, $1);}
-| modifiers classDcl      {$$ = newNode(TYPEDCL3, 2, $1, $2);}
-| modifiers interfaceDcl  {$$ = newNode(TYPEDCL4, 2, $1, $2);}
+typedcl: classDcl         { $$ = newNode(TYPEDCL1, 1, $1);}
+| interfaceDcl            { $$ = newNode(TYPEDCL2, 1, $1);}
+| modifiers classDcl      { $$ = newNode(TYPEDCL3, 2, $1, $2);}
+| modifiers interfaceDcl  { $$ = newNode(TYPEDCL4, 2, $1, $2);}
 ;
 
-classDcl: normalclassDcl  {$$ = newNode(CLASSDCL1, 1, $1);}
-| enumdcl                 {$$ = newNode(CLASSDCL2, 1, $1);}
+classDcl: normalclassDcl  { $$ = newNode(CLASSDCL1, 1, $1);}
+| enumdcl                 { $$ = newNode(CLASSDCL2, 1, $1);}
 ;
 
 normalclassDcl: CLASS IDT typeParametersList extendslist implementslist classbody 
 { Node *t1 = newLeaf("class");
   Node *t2 = newLeaf($2->name);
-  $$ = newNode(NORMALCLASSDCL, 6, t1, t2, $3, $4, $5, $6); 
-}
+  $$ = newNode(NORMALCLASSDCL, 6, t1, t2, $3, $4, $5, $6); }
 ;
 
 enumdcl: ENUM IDT implementslist enumBody  
+{ Node *t1 = newLeaf("enum"); 
+  Node *t2 = newLeaf($2->name);
+  $$ = newNode(ENUMDCL, 4, t1, t2, $3, $4); }
 ;
 
 normalinterfaceDcl: INTERFACE IDT typeParametersList extendstypelist interfacebody 
+{ Node *t1 = newLeaf("interface"); 
+  Node *t2 = newLeaf($2->name);
+  $$ = newNode(NORMALINTERFACEDCL, 5, t1, t2, $3, $4, $5);
+}
 ;
 
 annotationtypedcl: '@' INTERFACE IDT annotationtypebody 
@@ -109,36 +115,36 @@ extendslist:          {$$ = newNode(NoExtend, 0);}
                        $$ = newNode(EXTENDSLIST, 1, t, $2);}
 ;
 
-extendstypelist:     
-| EXTENDS typelist 
+extendstypelist:     { $$ = newNode(NOEXTENDSTYPELIST, 0);}
+| EXTENDS typelist   { Node *t = newLeaf("extends"); $$ = newNode(EXTENDSTYPELIST, 2, t, $2);}
 ;
 
-implementslist:         {$$ = newNode(NoImplements, 0);}
-| IMPLEMENTS typelist   {Node *t = newLeaf("implements");
-   $$ = newNode(IMPLEMENTSLIST, 1, t, $2);}
+implementslist:         { $$ = newNode(NoImplements, 0);}
+| IMPLEMENTS typelist   { Node *t = newLeaf("implements");
+                          $$ = newNode(IMPLEMENTSLIST, 1, t, $2);}
 ;
 
-typeParameters: '<' parameterlist '>'
+typeParameters: '<' parameterlist '>'  { $$ = $2; }
 ;
 
-parameterlist: typeparameter
-| parameterlist ',' typeparameter
+parameterlist: typeparameter       { $$ = newNode(TYPEPARAMETERLIST, 1, $1); }
+| parameterlist ',' typeparameter  { $$ = $1; addChild($$, $3);}
 ;
 
-typeparameter: IDT    
-| IDT EXTENDS bound   
+typeparameter: IDT    { $$ = newLeaf($1->name); }
+| IDT EXTENDS bound   { Node *t1 = newLeaf($1->name); Node *t2 = newLeaf("extends"); $$ = newNode(TYPEPARAMETER, 3, t1, t2, $3); }
 ;
 
-typelist: idts
-| typelist ',' idts
+typelist: idts        { $$ = newNode(TYPELIST, 1, $1); }
+| typelist ',' idts   { $$ = $1; addChild($$, $3); }
 ;
 
-bound: idts
-| idts '&' bound
+bound: idts         { $$ = newNode(BOUND, 1, $1); }
+| bound '&' idts    { $$ = $1; addChild($$, $3); }
 ;
 
-interfaceDcl: normalinterfaceDcl
-| annotationtypedcl
+interfaceDcl: normalinterfaceDcl  { $$ = $1; }
+| annotationtypedcl               { $$ = $1; }
 ;
 
 qualifiedidt: IDT        { Node *t = newLeaf($1->name);
@@ -151,8 +157,8 @@ qualifiedidtlist: qualifiedidt        { $$ = newNode(QUALIFIEDIDTLIST1, 1, $1); 
 | qualifiedidtlist ',' qualifiedidt   { $$ = newNode(QUALIFIEDIDTLIST2, 2, $1, $3); }
 ;
 
-modifiers: modifier    {$$ = newNode(MODIFIERS, 1, $1);}
-| modifiers modifier   {$$ = $1; addChild($$, $2); }
+modifiers: modifier    { $$ = newNode(MODIFIERS, 1, $1);}
+| modifiers modifier   { $$ = $1; addChild($$, $2); }
 ;
 
 modifier: PUBLIC   {$$ = newLeaf("public");}
@@ -262,19 +268,29 @@ methodDclRest: formalParameters sqBrackets throwlist block { $$ = newNode(METHOD
 | formalParameters sqBrackets throwlist ';'                { $$ = newNode(METHODDCLREST2, 3, $1, $2, $3); }
 ;
 
-voidMethodDclRest: formalParameters throwlist block  {$$ = newNode(VOIDMETHODDCLREST1, 3, $1, $2, $3);}
-| formalParameters throwlist ';'                     {$$ = newNode(VOIDMETHODDCLREST2, 2, $1, $2);}
+voidMethodDclRest: formalParameters throwlist block  { $$ = newNode(VOIDMETHODDCLREST1, 3, $1, $2, $3);}
+| formalParameters throwlist ';'                     { $$ = newNode(VOIDMETHODDCLREST2, 2, $1, $2);}
 ;
 
-constructorDclRest: formalParameters throwlist block  {$$ = newNode(TEMP, 0);} 
+constructorDclRest: formalParameters throwlist block  { $$ = newNode(CONSTRUCTORDCLREST, 3, $1, $2, $3);} 
 ;
 
-genericMethodOrConstructorDcl: typeParameters genericMethodOrConstructorRest    {$$ = newNode(TEMP, 0);}
+genericMethodOrConstructorDcl: typeParameters genericMethodOrConstructorRest    { $$ = newNode(GENERICMETHODORCONSTRUCTORDCL, 2, $1, $2);}
 ;
 
 genericMethodOrConstructorRest: javatype IDT methodDclRest  
+{ Node *t = newLeaf($2->name);
+  $$ = newNode(GENERICREST1, 3, $1, t, $3);
+}
 | VOID IDT methodDclRest 
+{ Node *t1 = newLeaf("void");
+  Node *t2 = newLeaf($2->name);
+  $$ = newNode(GENERICREST2, 3, t1, t2, $3);
+}
 | IDT constructorDclRest  
+{ Node *t = newLeaf($1->name);
+  $$ = newNode(GENERICREST3, 2, t, $2);
+}
 ;
 
 throwlist:                   { $$ = newNode(NOTHROW, 0); }
@@ -282,7 +298,7 @@ throwlist:                   { $$ = newNode(NOTHROW, 0); }
                                $$ = newNode(THROWLIST, 2, t, $2);}
 ;
 
-interfacebody: '{' interfaceBodyDcls '}'
+interfacebody: '{' interfaceBodyDcls '}'  
 ;
 
 interfaceBodyDcls: interfaceBodyDcl
@@ -624,7 +640,7 @@ classCreatorRest: args   { $$ = $1; }
 ;
 
 arrayCreatorRest: arrayInitializer { $$ = $1; }
-|                                  { $$ = NULL; }
+|                                  { $$ = newNode(TEMP, 0); }
 ;
 
 dimExps: '[' ']'        { Node *t1 = newLeaf("[");
@@ -643,14 +659,14 @@ dimExps: '[' ']'        { Node *t1 = newLeaf("[");
                           addChild($$, t1); addChild($$, t2);}
 ;
 
-idtSuffix: args
-| '.' CLASS
-| '.' THIS
-| '.' SUPER args
-| '.' NEW innerCreator
+idtSuffix: args         { $$ = $1; }
+| '.' CLASS             { $$ = newLeaf("class"); }
+| '.' THIS              { $$ = newLeaf("this"); }
+| '.' SUPER args        { Node *t = newLeaf("super"); $$ = newNode(IDTSUFFIX1, 2, t, $3); }
+| '.' NEW innerCreator  { Node *t = newLeaf("new"); $$ = newNode(IDTSUFFIX2, 2, t, $3);}
 ;
 
-innerCreator: IDT classCreatorRest
+innerCreator: IDT classCreatorRest { Node *t = newLeaf($1->name); $$ = newNode(INNERCREATOR, 2, t, $2);}
 ;
 
 selector: '.' IDT        { $$ = newLeaf($2->name);}
@@ -661,13 +677,13 @@ selector: '.' IDT        { $$ = newLeaf($2->name);}
 | '[' exp ']'            { $$ = $2; }
 ;
 
-selectors:             { $$ = newNode(SELECTORS, 0);}
+selectors:             { $$ = newNode(SELECTORS, 0); }
 | selectors selector   { $$ = $1; addChild($$, $2); }
 ;
 
-enumBody: '{' idts '}'
-| '{' idts ';' '}'
-|  '{' idts ';' classBodyDcls '}'
+enumBody: '{' idts '}'            { $$ = $2; }
+| '{' idts ';' '}'                { Node *t = newLeaf(";"); $$ = newNode(ENUMBODY1, 2, $2, t); }
+|  '{' idts ';' classBodyDcls '}' { Node *t = newLeaf(";"); $$ = newNode(ENUMBODY2, 3, $2, t, $4);}
 ;
 
 annotationtypebody: '{' annotationTypeElementDcls '}'   

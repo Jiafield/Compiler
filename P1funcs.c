@@ -99,26 +99,53 @@ void dump(Node *r, int level) {
   }
 }
 
-int cmpTree(Node *r1, Node *r2) {
-  
-  return 0;
+int cmpTree(Node *n1, Node *n2, Pair **table) {
+  // return 0 means false, 1 means true
+  if (!n1 || !n2)
+    return 0;
+  if (n1->type != ROOT || n2->type != ROOT)
+    return 0;
+  Root *r1 = (Root *)n1;
+  Root *r2 = (Root *)n2;
+  if (!naiveCmp(r1->pkg, r2->pkg, table))
+    return 0;
+  if (!naiveCmp(r1->imp, r2->imp, table))
+    return 0;
+  if (!naiveCmp(r1->types, r2->types, table))
+    return 0;
+  return 1;
 }
 
-int naiveCmp(Node *r1, Node *r2) {
+int naiveCmp(Node *r1, Node *r2, Pair **table) {
   // Compare if 2 subtrees are exactly the same
   // return 0 means false, 1 means true
   if (r1->type != r2->type)
     return 0;
   if (r1->type == TERMINAL) {
-    return 1;
+    Leaf *l1 = (Leaf *)r1;
+    Leaf *l2 = (Leaf *)r2;
+    if (strcmp(l1->symbol, l2->symbol) == 0)
+      return 1;
+    int cmpS = lookupPair(*table, l1->symbol, l2->symbol);
+    if (cmpS == 1) {
+      return 1;
+    } else if (cmpS == 2) {
+      printf("Symbols mismatch\n");
+      return 0;
+    } else {
+      addPair(table, l1->symbol, l2->symbol);
+      return 1;
+    }
   } else {
     if (r1->cNum != r2->cNum)
       return 0;
     Node *p1 = r1->children, *p2 = r2->children;
-    int num = p1->cNum, i;
+    int num = r1->cNum, i;
     for (i = 0; i < num; i++) {
-      if (!naiveCmp(p1, p2))
+      if (!naiveCmp(p1, p2, table))
 	return 0;
+      p1 = p1->sibling;
+      p2 = p2->sibling;
     }
   }
   return 1;
@@ -127,7 +154,6 @@ int naiveCmp(Node *r1, Node *r2) {
 void freeTree(Node *r) {
 
 }
-
 
 extern void yyrestart(FILE *fp);
 extern int yyparse();
@@ -151,7 +177,7 @@ int main() {
   Node *r1 = globalRoot;
   dumpTree(r1);
 
-  FILE *fp2 = fopen(file1, "r");
+  FILE *fp2 = fopen(file2, "r");
   if (!fp2) {
     printf("Open file error: %s\n", file2);
     exit(1);
@@ -162,8 +188,16 @@ int main() {
   Node *r2 = globalRoot;
   dumpTree(r2);
 
+  Pair *symbolPair = NULL;
+  if (cmpTree(r1, r2, &symbolPair)) {
+    printf("****** Matching Symbols ******\n");
+    printPair(symbolPair);
+    printf("******************************\n");
+    printf("Two files are equivalent.\n");
+  } else {
+    printf("Two files are not equivalent.\n");
+  }
   fclose(fp1);
   fclose(fp2);
   return 0;
 }
-
