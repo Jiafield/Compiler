@@ -235,8 +235,8 @@ int main() {
   yyrestart(fp1);
   yyparse();
   Node *r1 = globalRoot;
-  dumpTree(r1);
-  printf("\n");
+  // dumpTree(r1);
+  // printf("\n");
 
   FILE *fp2 = fopen(file2, "r");
   if (!fp2) {
@@ -247,8 +247,8 @@ int main() {
   yyrestart(fp2);
   yyparse();
   Node *r2 = globalRoot;
-  dumpTree(r2);
-  printf("\n");
+  // dumpTree(r2);
+  // printf("\n");
 
   Pair *symbolPair = NULL;
   if (cmpTree(r1, r2, &symbolPair)) {
