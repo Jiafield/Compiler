@@ -54,4 +54,5 @@ void dumpTree(Node *a);
 void dump(Node *r, int level);
 
 void freeTree(Node *r);
+void freeSubtree(Node *r);
 #endif

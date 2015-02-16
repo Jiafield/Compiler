@@ -175,6 +175,7 @@ int naiveCmp(Node *r1, Node *r2, Pair **table) {
 	    break;
 	  }
 	  cur2 = cur2->sibling;
+	  freePair(tempTable);
 	}	
 	if (!found) {
 	  return 0;
@@ -195,7 +196,29 @@ int naiveCmp(Node *r1, Node *r2, Pair **table) {
 }
 
 void freeTree(Node *r) {
+  if (!r)
+    return;
+  Root *root = (Root *)r;
+  freeSubtree(root->pkg);
+  freeSubtree(root->imp);
+  freeSubtree(root->types);
+}
 
+void freeSubtree(Node *r) {
+  if (!r)
+    return;
+  if (r->type == TERMINAL) {
+    Leaf *l = (Leaf *)r;
+    free(l);
+  } else {
+    int i, num = r->cNum;
+    Node *ptr = r->children;
+    for (i = 0; i < num; i++) {
+      freeSubtree(ptr);
+      ptr = ptr->sibling;
+    }
+    free(r);
+  }    
 }
 
 int main() {
@@ -213,6 +236,7 @@ int main() {
   yyparse();
   Node *r1 = globalRoot;
   dumpTree(r1);
+  printf("\n");
 
   FILE *fp2 = fopen(file2, "r");
   if (!fp2) {
@@ -224,16 +248,21 @@ int main() {
   yyparse();
   Node *r2 = globalRoot;
   dumpTree(r2);
+  printf("\n");
 
   Pair *symbolPair = NULL;
   if (cmpTree(r1, r2, &symbolPair)) {
-    printf("****** Matching Symbols ******\n");
+    printf("\n****** Matching Symbols ******\n");
     printPair(symbolPair);
     printf("******************************\n");
     printf("Two files are equivalent.\n\n");
   } else {
     printf("Two files are not equivalent.\n\n");
   }
+
+  freeTree(r1);
+  freeTree(r2);
+  freePair(symbolPair);
   fclose(fp1);
   fclose(fp2);
   return 0;

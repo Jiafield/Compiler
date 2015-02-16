@@ -51,3 +51,10 @@ void catPairs(Pair **p, Pair *temp) {
     head = head->next;
   }
 }
+
+void freePair(Pair *p) {
+  if (!p)
+    return;
+  freePair(p->next);
+  free(p);
+}
