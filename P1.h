@@ -27,6 +27,7 @@ typedef struct leaf {
   RULE_TYPE type;
   struct node *sibling;
   char *symbol;
+  int line;
 } Leaf;
 
 typedef struct root {

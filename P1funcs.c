@@ -5,6 +5,12 @@
 #include "P1.h"
 #include "P1Symbol.h"
 
+extern void yyrestart(FILE *fp);
+extern int yyparse();
+extern int yydebug;
+extern int yylineno;
+Node *globalRoot;
+
 void addEnums() {
 #define PROCESS(x) TypeToName[x] = #x;
 #include "P1enums.h"
@@ -43,6 +49,7 @@ Node *newLeaf(char *s) {
   n->type = TERMINAL;
   n->sibling = NULL;
   n->symbol = s;
+  n->line = yylineno;
   return (Node *)n;
 }
 
@@ -121,7 +128,9 @@ int naiveCmp(Node *r1, Node *r2, Pair **table) {
   // return 0 means false, 1 means true
   if (r1->type != r2->type)
     return 0;
+
   if (r1->type == TERMINAL) {
+    // If nodes are terminals
     Leaf *l1 = (Leaf *)r1;
     Leaf *l2 = (Leaf *)r2;
     if (strcmp(l1->symbol, l2->symbol) == 0)
@@ -130,7 +139,6 @@ int naiveCmp(Node *r1, Node *r2, Pair **table) {
     if (cmpS == 1) {
       return 1;
     } else if (cmpS == 2) {
-      printf("Symbols mismatch\n");
       return 0;
     } else {
       addPair(table, l1->symbol, l2->symbol);
@@ -143,22 +151,27 @@ int naiveCmp(Node *r1, Node *r2, Pair **table) {
     int num = r1->cNum, i, j;
     // Use status table to store the matching status.
     int *status = (int *)calloc(num, sizeof(int));
-    // Use pair table to store the temporary symbol matching result
     if (r1->type == TYPES || r1->type == CLASSBODYDCLS) {
       // Handle reordering of classes and methods
       Node *cur1 = r1->children;
       for (i = 0; i < num; i++) {
 	Node *cur2 = r2->children;
 	int found = 0;
-	Pair *tempTable = NULL;
 	for (j = 0; j < num; j++) {
+	  // Use pair table to store the temporary symbol matching result
+	  Pair *tempTable = NULL;
 	  if (status[j]) {
 	    cur2 = cur2->sibling;
 	    continue;
 	  }
 	  if (naiveCmp(cur1, cur2, &tempTable)) {
+	    catPairs(table, tempTable);
 	    found = 1;
 	    status[j] = 1;
+	    if (r1->type == TYPES)
+	      printf("Class %d match %d\n", i, j);
+	    else
+	      printf("Method or subroutine %d match %d\n", i, j);
 	    break;
 	  }
 	  cur2 = cur2->sibling;
@@ -166,7 +179,6 @@ int naiveCmp(Node *r1, Node *r2, Pair **table) {
 	if (!found) {
 	  return 0;
 	}
-	catPairs(table, tempTable);
 	cur1 = cur1->sibling;
       }
     } else {
@@ -185,12 +197,6 @@ int naiveCmp(Node *r1, Node *r2, Pair **table) {
 void freeTree(Node *r) {
 
 }
-
-extern void yyrestart(FILE *fp);
-extern int yyparse();
-extern int yydebug;
-extern int yylineno;
-Node *globalRoot;
 
 int main() {
   yydebug = 0;
